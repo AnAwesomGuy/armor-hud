@@ -2,9 +2,12 @@
   "required": true,
   "package": "ru.berdinskiybear.armorhud.mixin",
   "compatibilityLevel": "JAVA_17",
-  "mixins": [],
-  "client": ["BossBarHudMixin", "InGameHudMixin", "SubtitlesHudMixin"],
-  "server": [],
+  "client": [
+    "BossBarHudMixin",
+    "InGameHudMixin",
+    "SubtitlesHudMixin",
+    "PlayerScreenHandlerAccessor"
+  ],
   "injectors": {
     "defaultRequire": 1
   }

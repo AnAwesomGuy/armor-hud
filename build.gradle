@@ -12,10 +12,6 @@ repositories {
     }
 }
 
-loom {
-    accessWidenerPath = file("src/main/resources/ukus-armor-hud.accesswidener")
-}
-
 dependencies {
     //to change the versions see the gradle.properties file
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -33,6 +29,15 @@ processResources {
 
     filesMatching("fabric.mod.json") {
         expand "version": project.version
+    }
+}
+
+loom {
+    runs {
+        configureEach {
+            property 'mixin.debug.export', 'true'
+            property 'mixin.debug.verbose', 'true'
+        }
     }
 }
 

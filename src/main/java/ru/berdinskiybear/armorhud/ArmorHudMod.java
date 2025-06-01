@@ -7,19 +7,30 @@ import net.minecraft.client.option.KeyBinding;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import net.uku3lig.ukulib.config.ConfigManager;
 import net.uku3lig.ukulib.utils.Ukutils;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 import ru.berdinskiybear.armorhud.config.ArmorHudConfig;
 
+import java.util.List;
+
 public final class ArmorHudMod implements ClientModInitializer {
+    public static final String MOD_ID = "ukus-armor-hud";
+
+    public static final Identifier WARNING_TEXTURE = Identifier.of(MOD_ID, "warn.png");
+
     @Getter
-    private static final ConfigManager<ArmorHudConfig> manager = ConfigManager.createDefault(ArmorHudConfig.class, "ukus-armor-hud");
+    private static final ConfigManager<ArmorHudConfig> manager = ConfigManager.createDefault(ArmorHudConfig.class, MOD_ID);
 
     @Nullable
     public static PlayerEntity getCameraPlayer() {
         return MinecraftClient.getInstance().getCameraEntity() instanceof PlayerEntity player ? player : null;
+    }
+
+    public static List<ItemStack> nonEmptyArmor(PlayerEntity player) {
+        return player.getInventory().armor.stream().filter(s -> !s.isEmpty()).toList();
     }
 
     public static boolean shouldShowWarning(ItemStack stack) {
