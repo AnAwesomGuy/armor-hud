@@ -64,7 +64,7 @@ public abstract class InGameHudMixin {
         final int nonEmptyAmount = (int) armor.stream().filter(s -> !s.isEmpty()).count();
 
         // return if there is nothing to draw
-        if (armor.isEmpty() && config.getWidgetShown() != ArmorHudConfig.WidgetShown.ALWAYS) return;
+        if (nonEmptyAmount == 0 && config.getWidgetShown() != ArmorHudConfig.WidgetShown.ALWAYS) return;
 
         if (config.isReversed())
             armor = armor.reversed();
