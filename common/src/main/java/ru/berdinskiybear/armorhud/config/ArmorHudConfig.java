@@ -26,10 +26,10 @@ public class ArmorHudConfig implements Serializable {
     public static final ArmorHudConfig CONFIG = new ArmorHudConfig();
     public static final Path FILE = ArmorHudMod.configDir().resolve(ArmorHudMod.MOD_ID + ".json");
     public static final Gson GSON =
-            new GsonBuilder().setLenient()
-                    .setPrettyPrinting()
-                    .registerTypeAdapter(ArmorHudConfig.class, (InstanceCreator<ArmorHudConfig>) type -> CONFIG)
-                    .create();
+        new GsonBuilder().setLenient()
+                         .setPrettyPrinting()
+                         .registerTypeAdapter(ArmorHudConfig.class, (InstanceCreator<ArmorHudConfig>)type -> CONFIG)
+                         .create();
 
     static {
         CONFIG.load(); // if i run this in the constructor, the other fields are still null
@@ -44,6 +44,7 @@ public class ArmorHudConfig implements Serializable {
     public int offsetX = 0;
     public int offsetY = 0;
     public Style style = Style.HOTBAR;
+    public DurabilityStyle durabilityStyle = DurabilityStyle.BAR;
     public WidgetShown widgetShown = WidgetShown.NOT_EMPTY;
     public OffhandSlotBehavior offhandSlotBehavior = OffhandSlotBehavior.ADHERE;
     public boolean pushBossbars = true;
@@ -56,7 +57,7 @@ public class ArmorHudConfig implements Serializable {
     public double minDurabilityPercentage = 0.05;
     public int warningBobIntensity = 3;
 
-    //region getter and setters
+    //region // getter and setters
     //@formatter:off
     public boolean isDisabled() {
         return !enabled;
@@ -93,6 +94,12 @@ public class ArmorHudConfig implements Serializable {
     }
     public void setStyle(Style style) {
         this.style = style;
+    }
+    public DurabilityStyle getDurabilityStyle() {
+        return durabilityStyle;
+    }
+    public void setDurabilityStyle(DurabilityStyle style) {
+        this.durabilityStyle = style;
     }
     public WidgetShown getWidgetShown() {
         return widgetShown;
@@ -224,6 +231,22 @@ public class ArmorHudConfig implements Serializable {
         }
     }
 
+    public enum DurabilityStyle implements SelectionListEntry.Translatable {
+        BAR("armorhud.option.durabilityBar"),
+        NUMBERS("armorhud.option.durabilityNumbers");
+
+        public final String translationKey;
+
+        DurabilityStyle(String translationKey) {
+            this.translationKey = translationKey;
+        }
+
+        @Override
+        public @NotNull String getKey() {
+            return translationKey;
+        }
+    }
+
     public enum WidgetShown implements SelectionListEntry.Translatable {
         ALWAYS("armorhud.option.always"),
         IF_ANY_PRESENT("armorhud.option.ifAnyPresent"),
@@ -272,7 +295,8 @@ public class ArmorHudConfig implements Serializable {
     }
 
     public void save() {
-        try (Writer writer = Files.newBufferedWriter(FILE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
+        try (Writer writer = Files.newBufferedWriter(FILE, StandardOpenOption.CREATE,
+                                                     StandardOpenOption.TRUNCATE_EXISTING)) {
             GSON.toJson(CONFIG, writer);
         } catch (IOException e) {
             ArmorHudMod.LOGGER.error("Unable to write config to file!", e);
@@ -281,62 +305,68 @@ public class ArmorHudConfig implements Serializable {
 
     public Screen createScreen(Screen parent) {
         ConfigBuilder builder = ConfigBuilder.create()
-                .setTitle(translatable("armorhud.config"))
-                .setParentScreen(parent)
-                .setSavingRunnable(this::save);
+                                             .setTitle(translatable("armorhud.config"))
+                                             .setParentScreen(parent)
+                                             .setSavingRunnable(this::save);
         ConfigEntryBuilder entries = builder.entryBuilder();
         builder.getOrCreateCategory(translatable("armorhud.name"))
-                .addEntry(
-                        entries.startBooleanToggle(translatable("armorhud.option.enabled"), enabled)
-                                .setSaveConsumer(this::setEnabled).build())
-                .addEntry(
-                        entries.startEnumSelector(translatable("armorhud.option.anchor"), Anchor.class, anchor)
-                                .setSaveConsumer(this::setAnchor).build())
-                .addEntry(
-                        entries.startEnumSelector(translatable("armorhud.option.side"), Side.class, side)
-                                .setSaveConsumer(this::setSide).build())
-                .addEntry(
-                        entries.startIntField(translatable("armorhud.option.offsetX"), offsetX)
-                                .setSaveConsumer(this::setOffsetX).build())
-                .addEntry(
-                        entries.startIntField(translatable("armorhud.option.offsetY"), offsetY)
-                                .setSaveConsumer(this::setOffsetY).build())
-                .addEntry(
-                        entries.startEnumSelector(translatable("armorhud.option.style"), Style.class, style)
-                                .setSaveConsumer(this::setStyle).build())
-                .addEntry(
-                        entries.startEnumSelector(translatable("armorhud.option.widgetShown"), WidgetShown.class, widgetShown)
-                                .setSaveConsumer(this::setWidgetShown).build())
-                .addEntry(
-                        entries.startEnumSelector(translatable("armorhud.option.offhandSlotBehavior"), OffhandSlotBehavior.class, offhandSlotBehavior)
-                                .setSaveConsumer(this::setOffhandSlotBehavior).build())
-                .addEntry(
-                        entries.startBooleanToggle(translatable("armorhud.option.pushBossbars"), pushBossbars)
-                                .setSaveConsumer(this::setPushBossbars).build())
-                .addEntry(
-                        entries.startBooleanToggle(translatable("armorhud.option.pushIcons"), pushStatusEffectIcons)
-                                .setSaveConsumer(this::setPushStatusEffectIcons).build())
-                .addEntry(
-                        entries.startBooleanToggle(translatable("armorhud.option.pushSubtitles"), pushSubtitles)
-                                .setSaveConsumer(this::setPushSubtitles).build())
-                .addEntry(
-                        entries.startBooleanToggle(translatable("armorhud.option.reversed"), reversed)
-                                .setSaveConsumer(this::setReversed).build())
-                .addEntry(
-                        entries.startBooleanToggle(translatable("armorhud.option.showIcons"), iconsShown)
-                                .setSaveConsumer(this::setIconsShown).build())
-                .addEntry(
-                        entries.startBooleanToggle(translatable("armorhud.option.showWarning"), warningShown)
-                                .setSaveConsumer(this::setWarningShown).build())
-                .addEntry(
-                        entries.startIntField(translatable("armorhud.option.minDuraValue"), minDurabilityValue)
-                                .setSaveConsumer(this::setMinDurabilityValue).build())
-                .addEntry(
-                        entries.startIntSlider(translatable("armorhud.option.minDuraPercent"), (int) (minDurabilityPercentage * 100.0), 0, 100)
-                                .setSaveConsumer(this::setMinDurabilityPercentage).build())
-                .addEntry(
-                        entries.startIntField(translatable("armorhud.option.iconBobIntensity"), warningBobIntensity)
-                                .setSaveConsumer(this::setWarningBobIntensity).build());
+               .addEntry(
+                   entries.startBooleanToggle(translatable("armorhud.option.enabled"), enabled)
+                          .setSaveConsumer(this::setEnabled).build())
+               .addEntry(
+                   entries.startEnumSelector(translatable("armorhud.option.anchor"), Anchor.class, anchor)
+                          .setSaveConsumer(this::setAnchor).build())
+               .addEntry(
+                   entries.startEnumSelector(translatable("armorhud.option.side"), Side.class, side)
+                          .setSaveConsumer(this::setSide).build())
+               .addEntry(
+                   entries.startIntField(translatable("armorhud.option.offsetX"), offsetX)
+                          .setSaveConsumer(this::setOffsetX).build())
+               .addEntry(
+                   entries.startIntField(translatable("armorhud.option.offsetY"), offsetY)
+                          .setSaveConsumer(this::setOffsetY).build())
+               .addEntry(
+                   entries.startEnumSelector(translatable("armorhud.option.style"), Style.class, style)
+                          .setSaveConsumer(this::setStyle).build())
+               .addEntry(
+                   entries.startEnumSelector(translatable("armorhud.option.durabilityStyle"), DurabilityStyle.class, durabilityStyle)
+                          .setSaveConsumer(this::setDurabilityStyle).build())
+               .addEntry(
+                   entries.startEnumSelector(translatable("armorhud.option.widgetShown"), WidgetShown.class,
+                                             widgetShown)
+                          .setSaveConsumer(this::setWidgetShown).build())
+               .addEntry(
+                   entries.startEnumSelector(translatable("armorhud.option.offhandSlotBehavior"),
+                                             OffhandSlotBehavior.class, offhandSlotBehavior)
+                          .setSaveConsumer(this::setOffhandSlotBehavior).build())
+               .addEntry(
+                   entries.startBooleanToggle(translatable("armorhud.option.pushBossbars"), pushBossbars)
+                          .setSaveConsumer(this::setPushBossbars).build())
+               .addEntry(
+                   entries.startBooleanToggle(translatable("armorhud.option.pushIcons"), pushStatusEffectIcons)
+                          .setSaveConsumer(this::setPushStatusEffectIcons).build())
+               .addEntry(
+                   entries.startBooleanToggle(translatable("armorhud.option.pushSubtitles"), pushSubtitles)
+                          .setSaveConsumer(this::setPushSubtitles).build())
+               .addEntry(
+                   entries.startBooleanToggle(translatable("armorhud.option.reversed"), reversed)
+                          .setSaveConsumer(this::setReversed).build())
+               .addEntry(
+                   entries.startBooleanToggle(translatable("armorhud.option.showIcons"), iconsShown)
+                          .setSaveConsumer(this::setIconsShown).build())
+               .addEntry(
+                   entries.startBooleanToggle(translatable("armorhud.option.showWarning"), warningShown)
+                          .setSaveConsumer(this::setWarningShown).build())
+               .addEntry(
+                   entries.startIntField(translatable("armorhud.option.minDuraValue"), minDurabilityValue)
+                          .setSaveConsumer(this::setMinDurabilityValue).build())
+               .addEntry(
+                   entries.startIntSlider(translatable("armorhud.option.minDuraPercent"),
+                                          (int)(minDurabilityPercentage * 100.0), 0, 100)
+                          .setSaveConsumer(this::setMinDurabilityPercentage).build())
+               .addEntry(
+                   entries.startIntField(translatable("armorhud.option.iconBobIntensity"), warningBobIntensity)
+                          .setSaveConsumer(this::setWarningBobIntensity).build());
         return builder.build();
     }
 }

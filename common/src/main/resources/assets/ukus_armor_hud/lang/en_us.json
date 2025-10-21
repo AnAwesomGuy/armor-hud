@@ -8,6 +8,7 @@
   "armorhud.option.offsetX": "X Offset",
   "armorhud.option.offsetY": "Y Offset",
   "armorhud.option.style": "Style",
+  "armorhud.option.durabilityStyle": "Durability Style",
   "armorhud.option.widgetShown": "Show Widget",
   "armorhud.option.offhandSlotBehavior": "Offhand Slot",
   "armorhud.option.pushBossbars": "Push Bossbars",
@@ -28,6 +29,9 @@
   "armorhud.option.roundedCorners": "Rounded Corners",
   "armorhud.option.rounded": "Rounded",
   "armorhud.option.none": "No Background",
+
+  "armorhud.option.durabilityBar": "Durability Bar",
+  "armorhud.option.durabilityNumbers": "Numbers",
 
   "armorhud.option.always": "Always",
   "armorhud.option.ifAnyPresent": "If Any Present",

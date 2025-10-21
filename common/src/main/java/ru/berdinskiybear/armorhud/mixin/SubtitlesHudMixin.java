@@ -22,8 +22,8 @@ public class SubtitlesHudMixin {
     @Inject(method = "render", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/client/font/TextRenderer;getWidth(Ljava/lang/String;)I", ordinal = 3))
     public void calculateOffset(DrawContext context, CallbackInfo ci, @Share("offset") LocalIntRef offsetRef) {
         ArmorHudConfig config = ArmorHudConfig.CONFIG;
-        if (config.isDisabled() || !config.isPushSubtitles() || config.getAnchor() != ArmorHudConfig.Anchor.BOTTOM
-                || config.getSide() != ArmorHudConfig.Side.RIGHT) return;
+        if (config.isDisabled() || !config.isPushSubtitles() || config.getAnchor() != ArmorHudConfig.Anchor.BOTTOM ||
+            config.getSide() != ArmorHudConfig.Side.RIGHT) return;
 
         PlayerEntity player = ArmorHudMod.getCameraPlayer();
         if (player == null) return;
@@ -33,12 +33,8 @@ public class SubtitlesHudMixin {
 
         if (!armorItems.isEmpty() || config.getWidgetShown() == ArmorHudConfig.WidgetShown.ALWAYS) {
             offset += config.getOffsetY();
-            if (config.isWarningShown() && armorItems.stream().anyMatch(ArmorHudMod::shouldShowWarning)) {
-                offset += 10;
-                if (config.getWarningBobIntensity() != 0) {
-                    offset += Constants.WARNING_OFFSET;
-                }
-            }
+            if (config.isWarningShown() && armorItems.stream().anyMatch(ArmorHudMod::shouldShowWarning))
+                offset += config.getWarningBobIntensity() != 0 ? 10 + Constants.WARNING_OFFSET : 10;
         }
 
         offsetRef.set(Math.max(offset, 0));

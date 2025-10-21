@@ -6,6 +6,7 @@ import com.llamalad7.mixinextras.sugar.ref.LocalIntRef;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.InGameHud;
 import net.minecraft.client.option.AttackIndicator;
@@ -51,6 +52,9 @@ public abstract class InGameHudMixin {
     @Shadow
     protected abstract void renderHotbarItem(DrawContext context, int x, int y, RenderTickCounter tickCounter, PlayerEntity player, ItemStack stack, int seed);
 
+    @Shadow
+    public abstract TextRenderer getTextRenderer();
+
     @Inject(method = "renderHotbarVanilla", at = @At("TAIL"))
     public void renderArmorHud(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
         ArmorHudConfig config = ArmorHudConfig.CONFIG;
@@ -61,7 +65,8 @@ public abstract class InGameHudMixin {
 
         // fetch armor items
         List<ItemStack> armor = player.getInventory().armor;
-        final int nonEmptyAmount = (int) armor.stream().filter(s -> !s.isEmpty()).count();
+        int armorSize = armor.size();
+        final int nonEmptyAmount = (int)armor.stream().filter(s -> !s.isEmpty()).count();
 
         // return if there is nothing to draw
         if (nonEmptyAmount == 0 && config.getWidgetShown() != ArmorHudConfig.WidgetShown.ALWAYS) return;
@@ -81,7 +86,7 @@ public abstract class InGameHudMixin {
         final boolean anchorTop = anchor.isTop();
         final int sideMultiplier, sideOffsetMultiplier;
         if ((anchor == ArmorHudConfig.Anchor.HOTBAR && config.getSide() == ArmorHudConfig.Side.LEFT)
-                || (anchor != ArmorHudConfig.Anchor.HOTBAR && config.getSide() == ArmorHudConfig.Side.RIGHT)) {
+            || (anchor != ArmorHudConfig.Anchor.HOTBAR && config.getSide() == ArmorHudConfig.Side.RIGHT)) {
             sideMultiplier = -1;
             sideOffsetMultiplier = -1;
         } else {
@@ -91,7 +96,7 @@ public abstract class InGameHudMixin {
 
         final boolean showEmpty = config.getWidgetShown() != ArmorHudConfig.WidgetShown.NOT_EMPTY;
         final int slots = showEmpty ? armor.size() : nonEmptyAmount;
-        final int widgetWidth = SIZE + ((slots - 1) * STEP);
+        final int widgetWidth = SIZE + (slots - 1) * STEP;
 
         final int armorWidgetX = config.getOffsetX() * sideMultiplier + switch (anchor) {
             case TOP_CENTER -> context.getScaledWindowWidth() / 2 - (widgetWidth / 2);
@@ -101,14 +106,11 @@ public abstract class InGameHudMixin {
                     case ALWAYS_IGNORE -> 0;
                     case ALWAYS_LEAVE_SPACE -> OFFHAND_OFFSET;
                     case ADHERE -> {
-                        if (player.getMainArm().getOpposite() == config.getSide().asArm()) {
-                            if (!player.getOffHandStack().isEmpty()) {
+                        if (player.getMainArm().getOpposite() == config.getSide().asArm())
+                            if (!player.getOffHandStack().isEmpty())
                                 yield OFFHAND_OFFSET;
-                            } else if (this.client.options.getAttackIndicator().getValue() == AttackIndicator.HOTBAR) {
+                            else if (this.client.options.getAttackIndicator().getValue() == AttackIndicator.HOTBAR)
                                 yield ATTACK_INDICATOR_OFFSET;
-                            }
-                        }
-
                         yield 0;
                     }
                 };
@@ -119,7 +121,7 @@ public abstract class InGameHudMixin {
         final int armorWidgetY = anchorTop ? config.getOffsetY() : -config.getOffsetY() + context.getScaledWindowHeight() - SIZE;
         final int yPlus3 = armorWidgetY + 3;
 
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
 
@@ -128,20 +130,25 @@ public abstract class InGameHudMixin {
         matrices.translate(0, 0, -91);
         switch (config.getStyle()) {
             case HOTBAR -> {
-                context.drawGuiTexture(HOTBAR_TEXTURE, 182, 22, 0, 0, armorWidgetX, armorWidgetY, widgetWidth - 3, SIZE);
-                context.drawGuiTexture(HOTBAR_TEXTURE, 182, 22, 182 - 3, 0, armorWidgetX + widgetWidth - 3, armorWidgetY, 3, SIZE);
+                context.drawGuiTexture(HOTBAR_TEXTURE, 182, 22, 0, 0, armorWidgetX, armorWidgetY, widgetWidth - 3,
+                                       SIZE);
+                context.drawGuiTexture(HOTBAR_TEXTURE, 182, 22, 182 - 3, 0, armorWidgetX + widgetWidth - 3,
+                                       armorWidgetY, 3, SIZE);
             }
             case ROUNDED_CORNERS -> {
                 context.drawGuiTexture(HOTBAR_OFFHAND_LEFT_TEXTURE, 29, 24, 0, 1, armorWidgetX, armorWidgetY, 3, SIZE);
-                context.drawGuiTexture(HOTBAR_TEXTURE, 182, 22, 3, 0, armorWidgetX + 3, armorWidgetY, widgetWidth - 6, SIZE);
-                context.drawGuiTexture(HOTBAR_OFFHAND_LEFT_TEXTURE, 29, 24, SIZE - 3, 1, armorWidgetX + widgetWidth - 3, armorWidgetY, 3, SIZE);
+                context.drawGuiTexture(HOTBAR_TEXTURE, 182, 22, 3, 0, armorWidgetX + 3, armorWidgetY, widgetWidth - 6,
+                                       SIZE);
+                context.drawGuiTexture(HOTBAR_OFFHAND_LEFT_TEXTURE, 29, 24, SIZE - 3, 1, armorWidgetX + widgetWidth - 3,
+                                       armorWidgetY, 3, SIZE);
             }
             case ROUNDED -> {
-                int borderWidth = (SIZE - STEP) / 2;
-                context.drawGuiTexture(HOTBAR_OFFHAND_LEFT_TEXTURE, 29, 24, 0, 1, armorWidgetX, armorWidgetY, borderWidth, SIZE);
+                context.drawGuiTexture(HOTBAR_OFFHAND_LEFT_TEXTURE, 29, 24, 0, 1, armorWidgetX, armorWidgetY, 1, SIZE);
                 for (int i = 0; i < slots; i++)
-                    context.drawGuiTexture(HOTBAR_OFFHAND_LEFT_TEXTURE, 29, 24, borderWidth, 1, armorWidgetX + borderWidth + i * STEP, armorWidgetY, STEP, SIZE);
-                context.drawGuiTexture(HOTBAR_OFFHAND_LEFT_TEXTURE, 29, 24, 0, 1, armorWidgetX + widgetWidth - borderWidth, armorWidgetY, borderWidth, SIZE);
+                    context.drawGuiTexture(HOTBAR_OFFHAND_LEFT_TEXTURE, 29, 24, 1, 1,
+                                           armorWidgetX + 1 + i * STEP, armorWidgetY, STEP, SIZE);
+                context.drawGuiTexture(HOTBAR_OFFHAND_LEFT_TEXTURE, 29, 24, 0, 1,
+                                       armorWidgetX + widgetWidth - 1, armorWidgetY, 1, SIZE);
             }
         }
         matrices.pop();
@@ -150,18 +157,21 @@ public abstract class InGameHudMixin {
         if (config.isIconsShown() && showEmpty) {
             matrices.push();
             matrices.translate(0, 0, -90);
-            RenderSystem.blendFuncSeparate(GlStateManager.SrcFactor.SRC_COLOR, GlStateManager.DstFactor.ONE, GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ZERO);
+            RenderSystem.blendFuncSeparate(GlStateManager.SrcFactor.SRC_COLOR, GlStateManager.DstFactor.ONE,
+                                           GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ZERO);
 
-            SpriteAtlasTexture atlas = this.client.getBakedModelManager().getAtlas(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE);
-            for (int i = 0, size = armor.size() - 1; i <= size; i++) {
+            SpriteAtlasTexture atlas = this.client.getBakedModelManager()
+                                                  .getAtlas(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE);
+            for (int i = 0, widgetX = armorWidgetX + 3; i < armorSize; i++)
                 if (armor.get(i).isEmpty()) {
-                    int slotIndex = config.isReversed() ? i : size - i;
-                    Identifier spriteId = PlayerScreenHandlerAccessor.getEMPTY_ARMOR_SLOT_TEXTURES().get(PlayerScreenHandlerAccessor.getEQUIPMENT_SLOT_ORDER()[slotIndex]);
+                    int slotIndex = config.isReversed() ? i : armorSize - i - 1;
+                    Identifier spriteId = PlayerScreenHandlerAccessor.getEMPTY_ARMOR_SLOT_TEXTURES()
+                                                                     .get(
+                                                                         PlayerScreenHandlerAccessor.getEQUIPMENT_SLOT_ORDER()[slotIndex]);
                     Sprite sprite = atlas.getSprite(spriteId);
-
-                    context.drawSprite(armorWidgetX + (STEP * i) + 3, yPlus3, 0, 16, 16, sprite);
+                    context.drawSprite(widgetX, yPlus3, 0, 16, 16, sprite);
+                    widgetX += STEP;
                 }
-            }
 
             RenderSystem.defaultBlendFunc();
             matrices.pop();
@@ -169,29 +179,47 @@ public abstract class InGameHudMixin {
 
         // draw the armour items and the warning signs if necessary
         final boolean showWarning = config.isWarningShown();
-        int widgetX = armorWidgetX;
         int warningY = anchorTop ? armorWidgetY + SIZE : armorWidgetY - WARNING_OFFSET;
         final int intensity = config.getWarningBobIntensity();
         if (intensity != 0) {
-            int bob = (int) Math.round(Math.sin((ticks / 2.0) % Math.TAU) / 2.0 * intensity); // hi bob
+            int bob = (int)Math.round(Math.sin(ticks / 2.0) / 2.0 * intensity); // hi bob
             warningY += bob;
         }
-        for (ItemStack stack : armor) {
-            if (showWarning) {
-                if (ArmorHudMod.shouldShowWarning(stack)) {
-                    int x = widgetX + WARNING_OFFSET;
-                    context.drawTexture(ArmorHudMod.WARNING_TEXTURE, x, warningY, 0, 0, 0, 8, 8, 8, 8);
-                }
-            }
-
+        for (int i = 0, widgetX = armorWidgetX; i < armorSize; i++) {
+            ItemStack stack = armor.get(i);
             if (!stack.isEmpty()) {
-                this.renderHotbarItem(context, widgetX + 3, yPlus3, tickCounter, player, stack, widgetX);
-                widgetX += STEP;
-            } else if (showEmpty) {
-                widgetX += STEP;
-            }
-        }
+                // draw item
+                int x = widgetX + 3;
+                renderHotbarItem(context, x, yPlus3, tickCounter, player, stack, widgetX);
 
+                // render durability numbers
+                if (ArmorHudConfig.CONFIG.getDurabilityStyle() == ArmorHudConfig.DurabilityStyle.NUMBERS) {
+                    int duraX = x;
+                    TextRenderer textRenderer = getTextRenderer();
+                    int durability = stack.getMaxDamage() - stack.getDamage();
+                    String s = String.valueOf(durability);
+                    int width = textRenderer.getWidth(s);
+                    matrices.push();
+                    float factor = 16F / width;
+                    if (factor > 1F) {
+                        factor = 1F;
+                        duraX = (int)((duraX + (16 - width) / 2F) / factor);
+                    } else
+                        duraX = (int)(duraX / factor) + 1;
+                    int duraY = (int)(anchorTop ? (yPlus3 + SIZE) / factor : armorWidgetY / factor - 10);
+                    matrices.scale(factor, factor, 0F);
+                    context.drawText(textRenderer, s, duraX, duraY, stack.getItemBarColor(), true);
+                    matrices.pop();
+                }
+
+                // draw warning (above durability numbers)
+                if (showWarning && ArmorHudMod.shouldShowWarning(stack))
+                    context.drawTexture(ArmorHudMod.WARNING_TEXTURE, widgetX + WARNING_OFFSET, warningY, 0, 0, 0, 8, 8,
+                                        8, 8);
+                widgetX += STEP;
+            } else if (showEmpty)
+                widgetX += STEP;
+        }
         // remove my translations
         matrices.pop();
     }
@@ -200,7 +228,7 @@ public abstract class InGameHudMixin {
     public void calculateStatusEffectIconsOffset(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci, @Share("shift") LocalIntRef shiftRef) {
         ArmorHudConfig config = ArmorHudConfig.CONFIG;
         if (config.isDisabled() || !config.isPushStatusEffectIcons() || config.getAnchor() != ArmorHudConfig.Anchor.TOP
-                || config.getSide() != ArmorHudConfig.Side.RIGHT) return;
+            || config.getSide() != ArmorHudConfig.Side.RIGHT) return;
 
         PlayerEntity player = this.getCameraPlayer();
         if (player == null) return;
