@@ -2,10 +2,7 @@ package ru.berdinskiybear.armorhud;
 
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
@@ -19,7 +16,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 public final class ArmorHudMod {
-    public static final String MOD_ID = "ukus_armor_hud";
+    public static final String MOD_ID = "armor_hud";
 
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
@@ -35,27 +32,6 @@ public final class ArmorHudMod {
 
     public static List<ItemStack> nonEmptyArmor(PlayerEntity player) {
         return player.getInventory().armor.stream().filter(s -> !s.isEmpty()).toList();
-    }
-
-    public static void renderDurabilityNumbers(TextRenderer textRenderer, ItemStack stack, int x, int y, DrawContext context) {
-        if (ArmorHudConfig.CONFIG.getDurabilityStyle() == ArmorHudConfig.DurabilityStyle.NUMBERS) { // render durability numbers
-            int durability = stack.getMaxDamage() - stack.getDamage();
-            String s = String.valueOf(durability);
-            int width = textRenderer.getWidth(s);
-            MatrixStack matrices = context.getMatrices();
-            matrices.push();
-            float factor = 16F / width;
-            if (factor > 1F) {
-                factor = 1F;
-                x += (16 - width) / 2;
-                x = (int)(x / factor);
-            } else
-                x = (int)(x / factor) + 1;
-            y = (int)((y - 3) / factor) - 10;
-            matrices.scale(factor, factor, 0F);
-            context.drawText(textRenderer, s, x, y, stack.getItemBarColor(), true);
-            matrices.pop();
-        }
     }
 
     public static boolean shouldShowWarning(ItemStack stack) {

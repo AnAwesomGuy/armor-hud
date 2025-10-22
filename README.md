@@ -1,4 +1,4 @@
-# uku's Armor HUD
+# guy's Armor HUD
 
 Minecraft mod that adds a HUD widget that shows your current armor items.
 
