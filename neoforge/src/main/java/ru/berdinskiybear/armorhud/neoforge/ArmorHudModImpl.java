@@ -23,8 +23,8 @@ public class ArmorHudModImpl {
         bus.addListener(ArmorHudModImpl::registerKeybinds);
         if (dist.isClient())
             ModLoadingContext.get().registerExtensionPoint(
-                    IConfigScreenFactory.class,
-                    () -> (container, parent) -> ArmorHudConfig.CONFIG.createScreen(parent));
+                IConfigScreenFactory.class,
+                () -> (container, parent) -> ArmorHudConfig.CONFIG.createScreen(parent));
     }
 
     public static Path configDir() {

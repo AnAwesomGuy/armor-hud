@@ -1,4 +1,5 @@
 ## Configuration
+
 Here you can find description of all parameters for **BerdinskiyBear's Armor HUD** mod. Configuration file
 is a JSON file with a JSON object (curly brackets) with all config parameters as its members (name-value pairs
 inside curly brackets). If any of the Configuration parameters are missing their default values will be used.
@@ -53,8 +54,8 @@ inside curly brackets). If any of the Configuration parameters are missing their
         * `"ALWAYS_LEAVE_SPACE"`: widget always leaves space for the offhand slot even if it is not shown.
     * Default value: `"ADHERE"`
 9. ##### `"pushBossbars"`
-   * If widget is in the top middle bossbars will be pushed down by the widget.
-   * Default value: `true`
+    * If widget is in the top middle bossbars will be pushed down by the widget.
+    * Default value: `true`
 10. ##### `"pushStatusEffectIcons"`
     * If widget is in the top right corner effect icons will be pushed down by the widget.
     * Default value: `true`
@@ -62,22 +63,22 @@ inside curly brackets). If any of the Configuration parameters are missing their
     * If widget is in the bottom right corner subtitles will be pushed up by the widget.
     * Default value: `true`
 12. ##### `"reversed"`
-     * Reverses order of armor items in the slots of the widget.
-     * Default value: `true`
+    * Reverses order of armor items in the slots of the widget.
+    * Default value: `true`
 13. ##### `"iconsShown"`
-     * Shows special icons in empty slots.
-     * Default value: `true`
+    * Shows special icons in empty slots.
+    * Default value: `true`
 14. ##### `"warningShown"`
-     * If enabled, a small warning will appear at the slot of the item with low durability.
-     * Default value: `true`
+    * If enabled, a small warning will appear at the slot of the item with low durability.
+    * Default value: `true`
 15. ##### `"minDurabilityValue"`
-     * If durability value of a displayed item is equal or lower than this setting, a warning will be shown.
-     * Default value: `5`
+    * If durability value of a displayed item is equal or lower than this setting, a warning will be shown.
+    * Default value: `5`
 16. ##### `"minDurabilityPercentage"`
-     * If durability of a displayed item is equal or below this percentage, a warning will be shown.
-     * Default value: `0.05`
+    * If durability of a displayed item is equal or below this percentage, a warning will be shown.
+    * Default value: `0.05`
 17. ##### `"warningBobIntensity"`
-     * This parameter defines how quickly warning icon will move up and down when shown.
-       Lower the number quicker the motion.
-     * Set to 0 if you want to disable bobbing.
-     * Default value: `3`
+    * This parameter defines how quickly warning icon will move up and down when shown.
+      Lower the number quicker the motion.
+    * Set to 0 if you want to disable bobbing.
+    * Default value: `3`

@@ -329,7 +329,8 @@ public class ArmorHudConfig implements Serializable {
                    entries.startEnumSelector(translatable("armorhud.option.style"), Style.class, style)
                           .setSaveConsumer(this::setStyle).build())
                .addEntry(
-                   entries.startEnumSelector(translatable("armorhud.option.durabilityStyle"), DurabilityStyle.class, durabilityStyle)
+                   entries.startEnumSelector(translatable("armorhud.option.durabilityStyle"), DurabilityStyle.class,
+                                             durabilityStyle)
                           .setSaveConsumer(this::setDurabilityStyle).build())
                .addEntry(
                    entries.startEnumSelector(translatable("armorhud.option.widgetShown"), WidgetShown.class,
