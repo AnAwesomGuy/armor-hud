@@ -23,8 +23,9 @@ configurations {
 
 dependencies {
     modImplementation "net.fabricmc:fabric-loader:$fabric_loader_version"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:$fabric_api_version"
-
+    modImplementation fabricApi.module("fabric-resource-loader-v0", fabric_api_version)
+    modImplementation fabricApi.module("fabric-lifecycle-events-v1", fabric_api_version)
+    modImplementation fabricApi.module("fabric-key-binding-api-v1", fabric_api_version)
 
     common(project(path: ":common", configuration: "namedElements")) transitive false
     shadowCommon project(path: ":common", configuration: "transformProductionFabric")
