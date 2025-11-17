@@ -40,9 +40,10 @@ public class ArmorHudConfig implements Serializable {
 
     public boolean enabled = true;
     public Anchor anchor = Anchor.HOTBAR;
-    public Side side = Side.LEFT;
+    public Arm side = Arm.LEFT;
     public int offsetX = 0;
     public int offsetY = 0;
+    public boolean vertical = false;
     public Style style = Style.HOTBAR;
     public DurabilityStyle durabilityStyle = DurabilityStyle.BAR;
     public WidgetShown widgetShown = WidgetShown.NOT_EMPTY;
@@ -71,10 +72,10 @@ public class ArmorHudConfig implements Serializable {
     public void setAnchor(Anchor anchor) {
         this.anchor = anchor;
     }
-    public Side getSide() {
+    public Arm getSide() {
         return side;
     }
-    public void setSide(Side side) {
+    public void setSide(Arm side) {
         this.side = side;
     }
     public int getOffsetX() {
@@ -88,6 +89,12 @@ public class ArmorHudConfig implements Serializable {
     }
     public void setOffsetY(int offsetY) {
         this.offsetY = offsetY;
+    }
+    public boolean isVertical() {
+        return vertical;
+    }
+    public void setVertical(boolean vertical) {
+        this.vertical = vertical;
     }
     public Style getStyle() {
         return style;
@@ -199,20 +206,6 @@ public class ArmorHudConfig implements Serializable {
         }
     }
 
-    public enum Side implements SelectionListEntry.Translatable {
-        RIGHT,
-        LEFT;
-
-        public Arm asArm() {
-            return this == LEFT ? Arm.LEFT : Arm.RIGHT;
-        }
-
-        @Override
-        public @NotNull String getKey() {
-            return asArm().getTranslationKey();
-        }
-    }
-
     public enum Style implements SelectionListEntry.Translatable {
         HOTBAR("armorhud.option.hotbar"),
         ROUNDED_CORNERS("armorhud.option.roundedCorners"),
@@ -262,7 +255,6 @@ public class ArmorHudConfig implements Serializable {
         public @NotNull String getKey() {
             return translationKey;
         }
-
     }
 
     public enum OffhandSlotBehavior implements SelectionListEntry.Translatable {
@@ -317,7 +309,7 @@ public class ArmorHudConfig implements Serializable {
                    entries.startEnumSelector(translatable("armorhud.option.anchor"), Anchor.class, anchor)
                           .setSaveConsumer(this::setAnchor).build())
                .addEntry(
-                   entries.startEnumSelector(translatable("armorhud.option.side"), Side.class, side)
+                   entries.startEnumSelector(translatable("armorhud.option.side"), Arm.class, side)
                           .setSaveConsumer(this::setSide).build())
                .addEntry(
                    entries.startIntField(translatable("armorhud.option.offsetX"), offsetX)
@@ -325,6 +317,9 @@ public class ArmorHudConfig implements Serializable {
                .addEntry(
                    entries.startIntField(translatable("armorhud.option.offsetY"), offsetY)
                           .setSaveConsumer(this::setOffsetY).build())
+               .addEntry(
+                   entries.startBooleanToggle(translatable("armorhud.option.orientation"), vertical)
+                          .setSaveConsumer(this::setVertical).build())
                .addEntry(
                    entries.startEnumSelector(translatable("armorhud.option.style"), Style.class, style)
                           .setSaveConsumer(this::setStyle).build())

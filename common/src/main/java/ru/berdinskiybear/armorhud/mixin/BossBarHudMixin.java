@@ -26,11 +26,11 @@ public class BossBarHudMixin {
         List<ItemStack> armorItems = ArmorHudMod.nonEmptyArmor(player);
 
         if (!armorItems.isEmpty() || config.getWidgetShown() == ArmorHudConfig.WidgetShown.ALWAYS) {
-            y += Constants.SIZE + config.getOffsetY();
+            y += ArmorHudMod.SIZE + config.getOffsetY();
             if (y > orig && config.isWarningShown() && armorItems.stream().anyMatch(ArmorHudMod::shouldShowWarning)) {
                 y += 10;
                 if (config.getWarningBobIntensity() != 0)
-                    y += Constants.WARNING_OFFSET;
+                    y += ArmorHudMod.WARNING_OFFSET;
             }
         }
 

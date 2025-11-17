@@ -32,6 +32,6 @@
     "minecraft": "~1.21.1"
   },
   "breaks": {
-    "armor_hud": "*"
+    "ukus_armor_hud": "*"
   }
 }
