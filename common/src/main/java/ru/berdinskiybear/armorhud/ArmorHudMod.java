@@ -64,10 +64,8 @@ public final class ArmorHudMod {
 
     // message me on discord if you need help reading this, i can try to explain (or ask ai or smth idk)
     public static void render(InGameHudAccessor hud, DrawContext context, RenderTickCounter tickCounter, PlayerEntity player, MinecraftClient client, int ticks) {
-        ArmorHudConfig config = ArmorHudConfig.CONFIG;
-
-        // fetch armor items
-        final List<ItemStack> armor = player.getInventory().armor;
+        final ArmorHudConfig config = ArmorHudConfig.CONFIG;
+        final List<ItemStack> armor = player.getInventory().armor; // fetch armor items
         final int armorSize = armor.size();
         final int nonEmptyCount = (int)armor.stream().filter(s -> !s.isEmpty()).count();
 
@@ -78,6 +76,7 @@ public final class ArmorHudMod {
         final MatrixStack matrices = context.getMatrices();
         final ArmorHudConfig.Anchor anchor = config.getAnchor();
         final boolean anchorTop = anchor.isTop();
+        final boolean right = config.getSide() == Arm.RIGHT;
         boolean vertical = config.isVertical();
         final boolean showEmpty = config.getWidgetShown() != ArmorHudConfig.WidgetShown.NOT_EMPTY;
         final int slots = showEmpty ? armorSize : nonEmptyCount;
@@ -86,9 +85,9 @@ public final class ArmorHudMod {
         // hotbar offset is relative to the bar, so when we are on the left it needs to be flipped
         // and on the right side, we need to flip the offset, except when anchored to the hotbar
         final int sideMultiplier, sideOffsetMultiplier;
-        if ((anchor == ArmorHudConfig.Anchor.HOTBAR && config.getSide() == Arm.LEFT) ||
-            (anchor != ArmorHudConfig.Anchor.HOTBAR && config.getSide() == Arm.RIGHT)) {
-            sideMultiplier = -1; // right
+        // (anchor == ArmorHudConfig.Anchor.HOTBAR && !right) || (anchor != ArmorHudConfig.Anchor.HOTBAR && right)
+        if ((anchor == ArmorHudConfig.Anchor.HOTBAR) != right) {
+            sideMultiplier = -1; // right or hotbar
             sideOffsetMultiplier = -1;
         } else {
             sideMultiplier = 1; // left
@@ -151,7 +150,7 @@ public final class ArmorHudMod {
                 context.drawGuiTexture(getHOTBAR_TEXTURE(), 182, 22, 0, 0,
                                        rotatedX, rotatedY, widgetSize - EDGE_SIZE, SIZE); // left part
                 context.drawGuiTexture(getHOTBAR_TEXTURE(), 182, 22, 182 - EDGE_SIZE, 0,
-                                       rotatedX + widgetSize - EDGE_SIZE, rotatedY, EDGE_SIZE, SIZE); // right edge with the outline
+                                       rotatedX + widgetSize - EDGE_SIZE, rotatedY, EDGE_SIZE, SIZE); // right edge
             }
             case ROUNDED_CORNERS -> {
                 if (slots > 1) {
@@ -160,7 +159,8 @@ public final class ArmorHudMod {
                     context.drawGuiTexture(getHOTBAR_TEXTURE(), 182, 22, EDGE_SIZE, 0,
                                            rotatedX + EDGE_SIZE, rotatedY, widgetSize - 6, SIZE); // middle
                     context.drawGuiTexture(getHOTBAR_OFFHAND_LEFT_TEXTURE(), 29, 24, SIZE - EDGE_SIZE, 1,
-                                           rotatedX + widgetSize - EDGE_SIZE, rotatedY, EDGE_SIZE, SIZE); // round right edge
+                                           rotatedX + widgetSize - EDGE_SIZE, rotatedY, EDGE_SIZE,
+                                           SIZE); // round right edge
                 } else // only one round slot
                     context.drawGuiTexture(getHOTBAR_OFFHAND_LEFT_TEXTURE(), 29, 24, 0, 1,
                                            rotatedX, rotatedY, SIZE, SIZE);
@@ -168,12 +168,12 @@ public final class ArmorHudMod {
             case ROUNDED -> {
                 if (slots > 1) {
                     context.drawGuiTexture(getHOTBAR_OFFHAND_LEFT_TEXTURE(), 29, 24, 0, 1,
-                                           rotatedX, rotatedY, STEP + 1, SIZE); // left slot
+                                           rotatedX, rotatedY, SIZE - 1, SIZE); // left slot
                     for (int i = slots - 2; i >= 1; i--) // nothing happens if slots <= 2
                         context.drawGuiTexture(getHOTBAR_OFFHAND_LEFT_TEXTURE(), 29, 24, 1, 1,
                                                rotatedX + 1 + i * STEP, rotatedY, STEP, SIZE); // middle slots
-                    context.drawGuiTexture(getHOTBAR_OFFHAND_LEFT_TEXTURE(), 29, 24, 0, 1,
-                                           rotatedX + widgetSize - STEP - 1, rotatedY, STEP + 1, SIZE); // right slot
+                    context.drawGuiTexture(getHOTBAR_OFFHAND_LEFT_TEXTURE(), 29, 24, 1, 1,
+                                           rotatedX + widgetSize - STEP - 1, rotatedY, SIZE - 1, SIZE); // right slot
                 } else // only one round slot
                     context.drawGuiTexture(getHOTBAR_OFFHAND_LEFT_TEXTURE(), 29, 24, 0, 1,
                                            rotatedX, rotatedY, SIZE, SIZE);
@@ -187,11 +187,13 @@ public final class ArmorHudMod {
         // calculate warning offset
         int warningOffset = 0;
         if (config.isWarningShown()) {
-            warningOffset = vertical ? SIZE * sideMultiplier : (anchorTop ? STEP : -WARNING_OFFSET - 8);
             final int intensity = config.getWarningBobIntensity();
+            warningOffset = vertical ? (right ? -12 : STEP) : (anchorTop ? STEP : -WARNING_OFFSET - 8);
             if (intensity != 0) {
+                // sine wave that goes up and down for the bob
                 int bob = Math.round(MathHelper.sin(ticks / 2F) / 2F * intensity); // hi bob
-                warningOffset += bob;
+                // invert bob if vertical and on the right or if anchored on the top
+                warningOffset += vertical ? bob * sideMultiplier : (anchorTop ? -bob : bob);
             }
         }
 
@@ -218,8 +220,8 @@ public final class ArmorHudMod {
                         // textX = x + SIZE + sideOffsetMultiplier * (width + SIZE + 3)
                         // textX = x + (width + 3) * sideOffsetMultiplier + SIZE * (sideOffsetMultiplier + 1)
                         // why am i even trying to optimize this? this is already very clean
-                        textX = x + (sideMultiplier < 0 ? -width - 3 : SIZE); // if true then it's right, if false it's left
-                        textY = y + 3;
+                        textX = widgetX + (right ? -width - 2 : SIZE + 2); // if true then it's right, if false it's left
+                        textY = y + 4; // (16 - 8) / 2 -> (16 - text height) / 2
                     } else {
                         // center text and cap factor at 1
                         if (factor > 1F) {
@@ -227,7 +229,7 @@ public final class ArmorHudMod {
                             textX = x + (16 - width) / 2;
                         } else
                             textX = (int)(x / factor) + 1;
-                        textY = (int)(anchorTop ? (y + SIZE) / factor : widgetY / factor - 11); // move down if top, up if bottom
+                        textY = (int)(anchorTop ? (widgetY + SIZE + 2) / factor : (widgetY - 2) / factor - 7); // move down if top, up if bottom
                         matrices.push();
                         matrices.scale(factor, factor, 0F); // scale
                     }
@@ -242,12 +244,12 @@ public final class ArmorHudMod {
                     context.drawTexture(ArmorHudMod.WARNING_TEXTURE,
                                         x + (vertical ? warningOffset : WARNING_OFFSET),
                                         y + (vertical ? WARNING_OFFSET : warningOffset),
-                                        0, 0, 0, 8, 8, 8, 8);
+                                        -1, 0, 0, 8, 8, 8, 8); // z = -1 to appear behind the text
                 }
             } else if (atlas != null) { // background slot icons (if slot is empty and the config says so)
-                Identifier spriteId = PlayerScreenHandlerAccessor.getEMPTY_ARMOR_SLOT_TEXTURES()
-                                                                 .get(
-                                                                     PlayerScreenHandlerAccessor.getEQUIPMENT_SLOT_ORDER()[index]);
+                Identifier spriteId =
+                    PlayerScreenHandlerAccessor.getEMPTY_ARMOR_SLOT_TEXTURES()
+                                               .get(PlayerScreenHandlerAccessor.getEQUIPMENT_SLOT_ORDER()[index]);
                 Sprite sprite = atlas.getSprite(spriteId);
                 context.drawSprite(x, y, 0, 16, 16, sprite);
             }
