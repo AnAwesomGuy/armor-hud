@@ -17,7 +17,7 @@
   "armorhud.option.showIcons": "Показывать иконки",
   "armorhud.option.showWarning": "Показывать предупреждение",
   "armorhud.option.minDuraValue": "Мин. прочность",
-  "armorhud.option.minDuraPercent": "Мин. прочность",
+  "armorhud.option.minDuraPercent": "Мин. прочность %",
   "armorhud.option.iconBobIntensity": "Интенсивность покачивания иконок",
 
   "armorhud.option.topCenter": "Вверху по центру",

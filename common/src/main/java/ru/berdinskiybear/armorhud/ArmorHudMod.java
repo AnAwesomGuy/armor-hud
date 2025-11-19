@@ -201,6 +201,7 @@ public final class ArmorHudMod {
         SpriteAtlasTexture atlas = showEmpty && config.isIconsShown() ?
             client.getBakedModelManager().getAtlas(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE) : null;
         final boolean reversed = config.isReversed();
+        final boolean showNumbers = config.isDurabilityNumbers();
         for (int i = 0, x = widgetX + EDGE_SIZE, y = widgetY + EDGE_SIZE; i < armorSize; i++) {
             int index = reversed ? i : armorSize - i - 1;
             ItemStack stack = armor.get(index);
@@ -209,7 +210,7 @@ public final class ArmorHudMod {
                 hud.callRenderHotbarItem(context, x, y, tickCounter, player, stack, nonEmptyCount);
 
                 // render durability numbers
-                if (ArmorHudConfig.CONFIG.getDurabilityStyle() == ArmorHudConfig.DurabilityStyle.NUMBERS) {
+                if (showNumbers) {
                     TextRenderer textRenderer = client.textRenderer;
                     int durability = stack.getMaxDamage() - stack.getDamage();
                     String s = String.valueOf(durability);

@@ -1,14 +1,17 @@
 ## Configuration
 
-Here you can find description of all parameters for **BerdinskiyBear's Armor HUD** mod. Configuration file
-is a JSON file with a JSON object (curly brackets) with all config parameters as its members (name-value pairs
-inside curly brackets). If any of the Configuration parameters are missing their default values will be used.
+Here you can find description of all parameters for **guy's Armor HUD** mod.
+The configuration file is handled by Cloth Config and stored in a JSON file with all the config parameters (name-value pairs inside curly brackets).
+If any of the configuration parameters are missing their default values will be used.
+You can also configure the mod using the Mod Menu mod on Fabric and the mod list on Neoforge.
 
 1. ##### `"enabled"`
     * Master switch for this mod.
+    * Type: boolean
     * Default value: `true`
 2. ##### `"anchor"`
     * Place that the HUD widget is attached to.
+    * Type: enum
     * Possible values:
         * `"TOP_CENTER"` - widget is placed at the top in the middle.
         * `"TOP"` - widget is placed at the upper corner on the preferred side.
@@ -18,67 +21,88 @@ inside curly brackets). If any of the Configuration parameters are missing their
 3. ##### `"side"`
     * Side on which widget is shown.
       If widget is anchored at the top in the middle this setting does nothing.
+    * Type: enum
     * Possible values:
         * `"LEFT"`
         * `"RIGHT"`
     * Default value: `"LEFT"`
 4. ##### `"offsetX"`
-    * Offsets widget position on a horizontal axis. Positive numbers moves away from anchor point,
-      negative numbers move widget onto the anchor point.
+    * Offsets the widget on the horizontal axis. Positive numbers move it away from anchor point, while negative numbers move it toward the anchor point.
+    * Type: integer
     * Default value: `0`
 5. ##### `"offsetY"`
-    * Offsets widget position on a vertical axis, otherwise the same as X offset.
+    * Offsets widget on the vertical axis, otherwise the same as X offset.
     * Default value: `0`
-6. ##### `"style"`
+6. ##### `"vertical"`
+    * If the widget should display vertically.
+    * Type: boolean
+    * Default value: `false`
+7. ##### `"style"`
     * Widget slot style defines how slots are drawn on the screen.
       Try different styles to find ones that work and choose one that you prefer.
+    * Type: enum
     * Possible values:
         * `"HOTBAR"`
         * `"ROUNDED_CORNERS"`
         * `"ROUNDED"`
         * `"NONE"`
     * Default value: `"HOTBAR"`
-7. ##### `"widgetShown"`
+8. ##### `"durabilityNumbers"`
+    * If the durability numbers should be shown.
+    * Type: boolean
+    * Default value: `false`
+9. ##### `"widgetShown"`
     * This setting defines when slots of the HUD widget are shown.
+    * Type: enum
     * Possible values:
         * `"ALWAYS"`: slots are always shown.
         * `"IF_ANY_PRESENT"`: all slots are shown if at least one of the armor slots is not empty.
         * `"NOT_EMPTY"`: only not empty slots are shown
     * Default value: `"NOT_EMPTY"`
-8. ##### `"offhandSlotBehavior"`
+10. ##### `"offhandSlotBehavior"`
     * This setting defines the way widget reacts to offhand slot and attack indicator if it is at the hotbar.
       Setting does nothing unless widget is anchored at the hotbar.
+    * Type: enum
     * Possible values:
         * `"ALWAYS_IGNORE"`: widget never moves away to make space for hotbar or attack indicator.
         * `"ADHERE"`: widget moves away when offhand slot is shown or attack indicator is at hotbar.
         * `"ALWAYS_LEAVE_SPACE"`: widget always leaves space for the offhand slot even if it is not shown.
     * Default value: `"ADHERE"`
-9. ##### `"pushBossbars"`
+11. ##### `"pushBossbars"`
     * If widget is in the top middle bossbars will be pushed down by the widget.
+    * Type: boolean
     * Default value: `true`
-10. ##### `"pushStatusEffectIcons"`
+12. ##### `"pushStatusEffectIcons"`
     * If widget is in the top right corner effect icons will be pushed down by the widget.
+    * Type: boolean
     * Default value: `true`
-11. ##### `"pushSubtitles"`
+13. ##### `"pushSubtitles"`
     * If widget is in the bottom right corner subtitles will be pushed up by the widget.
+    * Type: boolean
     * Default value: `true`
-12. ##### `"reversed"`
+14. ##### `"reversed"`
     * Reverses order of armor items in the slots of the widget.
+    * Type: boolean
     * Default value: `true`
-13. ##### `"iconsShown"`
+15. ##### `"iconsShown"`
     * Shows special icons in empty slots.
+    * Type: boolean
     * Default value: `true`
-14. ##### `"warningShown"`
+16. ##### `"warningShown"`
     * If enabled, a small warning will appear at the slot of the item with low durability.
+    * Type: boolean
     * Default value: `true`
-15. ##### `"minDurabilityValue"`
+17. ##### `"minDurabilityValue"`
     * If durability value of a displayed item is equal or lower than this setting, a warning will be shown.
+    * Type: integer
     * Default value: `5`
-16. ##### `"minDurabilityPercentage"`
+18. ##### `"minDurabilityPercentage"`
     * If durability of a displayed item is equal or below this percentage, a warning will be shown.
+    * Type: float
     * Default value: `0.05`
-17. ##### `"warningBobIntensity"`
+19. ##### `"warningBobIntensity"`
     * This parameter defines how quickly warning icon will move up and down when shown.
       Lower the number quicker the motion.
     * Set to 0 if you want to disable bobbing.
+    * Type: integer
     * Default value: `3`

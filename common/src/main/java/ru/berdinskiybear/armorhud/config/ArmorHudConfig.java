@@ -45,7 +45,7 @@ public class ArmorHudConfig implements Serializable {
     public int offsetY = 0;
     public boolean vertical = false;
     public Style style = Style.HOTBAR;
-    public DurabilityStyle durabilityStyle = DurabilityStyle.BAR;
+    public boolean durabilityNumbers = false;
     public WidgetShown widgetShown = WidgetShown.NOT_EMPTY;
     public OffhandSlotBehavior offhandSlotBehavior = OffhandSlotBehavior.ADHERE;
     public boolean pushBossbars = true;
@@ -102,11 +102,11 @@ public class ArmorHudConfig implements Serializable {
     public void setStyle(Style style) {
         this.style = style;
     }
-    public DurabilityStyle getDurabilityStyle() {
-        return durabilityStyle;
+    public boolean isDurabilityNumbers() {
+        return durabilityNumbers;
     }
-    public void setDurabilityStyle(DurabilityStyle style) {
-        this.durabilityStyle = style;
+    public void setDurabilityNumbers(boolean durabilityNumbers) {
+        this.durabilityNumbers = durabilityNumbers;
     }
     public WidgetShown getWidgetShown() {
         return widgetShown;
@@ -224,22 +224,6 @@ public class ArmorHudConfig implements Serializable {
         }
     }
 
-    public enum DurabilityStyle implements SelectionListEntry.Translatable {
-        BAR("armorhud.option.durabilityBar"),
-        NUMBERS("armorhud.option.durabilityNumbers");
-
-        public final String translationKey;
-
-        DurabilityStyle(String translationKey) {
-            this.translationKey = translationKey;
-        }
-
-        @Override
-        public @NotNull String getKey() {
-            return translationKey;
-        }
-    }
-
     public enum WidgetShown implements SelectionListEntry.Translatable {
         ALWAYS("armorhud.option.always"),
         IF_ANY_PRESENT("armorhud.option.ifAnyPresent"),
@@ -324,9 +308,8 @@ public class ArmorHudConfig implements Serializable {
                    entries.startEnumSelector(translatable("armorhud.option.style"), Style.class, style)
                           .setSaveConsumer(this::setStyle).build())
                .addEntry(
-                   entries.startEnumSelector(translatable("armorhud.option.durabilityStyle"), DurabilityStyle.class,
-                                             durabilityStyle)
-                          .setSaveConsumer(this::setDurabilityStyle).build())
+                   entries.startBooleanToggle(translatable("armorhud.option.durabilityNumbers"), durabilityNumbers)
+                          .setSaveConsumer(this::setDurabilityNumbers).build())
                .addEntry(
                    entries.startEnumSelector(translatable("armorhud.option.widgetShown"), WidgetShown.class,
                                              widgetShown)
