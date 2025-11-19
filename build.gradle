@@ -2,6 +2,7 @@ plugins {
     id 'architectury-plugin' version '3.4-SNAPSHOT'
     id 'dev.architectury.loom' version '1.13-SNAPSHOT' apply false
     id 'com.gradleup.shadow' version '8.3.+' apply false
+    id "me.modmuss50.mod-publish-plugin" version "1.1.+"
 }
 
 allprojects {
@@ -48,7 +49,9 @@ subprojects {
                 minecraft_version: project.minecraft_version,
                 mod_id           : project.mod_id,
                 mod_name         : project.mod_name,
-                mod_description  : project.mod_description
+                mod_description  : project.mod_description,
+                github           : project.github,
+                modrinth_id      : project.modrinth_id
         ]
 
         inputs.properties properties
@@ -56,6 +59,16 @@ subprojects {
 
         filesMatching(["fabric.mod.json", "META-INF/*mods.toml"]) {
             expand properties
+        }
+
+        doLast {
+            // minify JSONs
+            def slurper = new groovy.json.JsonSlurper()
+            outputs.files.asFileTree.matching {
+                include '**/*.json', '**/*.mcmeta'
+            }.each {
+                it.text = groovy.json.JsonOutput.toJson slurper.parse(it)
+            }
         }
     }
 
@@ -65,9 +78,95 @@ subprojects {
         }
     }
 
+    tasks.withType(net.fabricmc.loom.task.AbstractRemapJarTask).configureEach {
+        archiveAppendix = project.name
+    }
+
     loom.runs.configureEach {
         property 'mixin.debug.export', 'true'
         property 'mixin.debug.verbose', 'true'
         property 'terminal.jline', 'true'
+    }
+}
+
+publishMods {
+    changelog = project.changelog
+    type = STABLE
+    def fabricJar = project.provider { project(":fabric").remapJar }.flatMap { it.archiveFile }
+    def fabricSources = project.provider { project(":fabric").remapSourcesJar }.flatMap { it.archiveFile }
+    def neoForgeJar = project.provider { project(":neoforge").remapJar }.flatMap { it.archiveFile }
+    def neoForgeSources = project.provider { project(":neoforge").remapSourcesJar }.flatMap { it.archiveFile }
+
+    def fabric = publishOptions {
+        file = fabricJar
+        additionalFiles.from fabricSources
+        version = project.version + "-fabric"
+        displayName = "[Fabric 1.21.1] $mod_name $project.version"
+        modLoaders.addAll "fabric", "quilt"
+    }
+
+    def neoForge = publishOptions {
+        file = neoForgeJar
+        additionalFiles.from neoForgeSources
+        version = project.version + "-neoforge"
+        displayName = "[Neo 1.21.1] $mod_name $project.version"
+        modLoaders.add "neoforge"
+    }
+
+    def modrinthOptions = modrinthOptions {
+        accessToken = providers.environmentVariable('MODRINTH_TOKEN')
+        dryRun = !accessToken.present
+        projectId = modrinth_id
+    }
+
+    def curseOptions = curseforgeOptions {
+        accessToken = providers.environmentVariable('CURSEFORGE_TOKEN')
+        dryRun = !accessToken.present
+        projectId = curseforge_id
+        clientRequired = true
+        serverRequired = true
+    }
+
+    curseforge("curseFabric") {
+        from curseOptions, fabric
+        minecraftVersionRange {
+            start = "1.21"
+            end = "1.21.1"
+        }
+        requires("fabric-api")
+    }
+
+    curseforge("curseNeoForge") {
+        from curseOptions, neoForge
+        minecraftVersionRange {
+            start = "1.21"
+            end = "1.21.1"
+        }
+    }
+
+    modrinth("modrinthFabric") {
+        from modrinthOptions, fabric
+        minecraftVersionRange {
+            start = "1.21"
+            end = "1.21.1"
+        }
+        requires("fabric-api")
+    }
+
+    modrinth("modrinthNeoForge") {
+        from modrinthOptions, neoForge
+        minecraftVersionRange {
+            start = "1.21"
+            end = "1.21.1"
+        }
+    }
+
+    github {
+        additionalFiles.from fabricJar, neoForgeJar, fabricSources, neoForgeSources
+        accessToken = providers.environmentVariable('GITHUB_TOKEN')
+        dryRun = !accessToken.present
+        repository = github
+        commitish = "1.21.1-multiloader"
+        tagName = project.version
     }
 }

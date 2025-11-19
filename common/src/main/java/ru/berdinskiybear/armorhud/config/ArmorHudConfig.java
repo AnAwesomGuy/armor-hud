@@ -4,12 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.InstanceCreator;
 import com.google.gson.JsonSyntaxException;
-import me.shedaniel.clothconfig2.api.ConfigBuilder;
-import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
-import me.shedaniel.clothconfig2.gui.entries.SelectionListEntry;
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.util.Arm;
-import org.jetbrains.annotations.NotNull;
 import ru.berdinskiybear.armorhud.ArmorHudMod;
 
 import java.io.IOException;
@@ -19,8 +14,6 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-
-import static net.minecraft.text.Text.translatable;
 
 public class ArmorHudConfig implements Serializable {
     public static final ArmorHudConfig CONFIG = new ArmorHudConfig();
@@ -184,7 +177,7 @@ public class ArmorHudConfig implements Serializable {
         setEnabled(!isDisabled());
     }
 
-    public enum Anchor implements SelectionListEntry.Translatable {
+    public enum Anchor {
         TOP_CENTER("armorhud.option.topCenter"),
         TOP("armorhud.option.top"),
         BOTTOM("armorhud.option.bottom"),
@@ -196,17 +189,12 @@ public class ArmorHudConfig implements Serializable {
             this.translationKey = translationKey;
         }
 
-        @Override
-        public @NotNull String getKey() {
-            return translationKey;
-        }
-
         public boolean isTop() {
             return this == TOP || this == TOP_CENTER;
         }
     }
 
-    public enum Style implements SelectionListEntry.Translatable {
+    public enum Style {
         HOTBAR("armorhud.option.hotbar"),
         ROUNDED_CORNERS("armorhud.option.roundedCorners"),
         ROUNDED("armorhud.option.rounded"),
@@ -217,14 +205,9 @@ public class ArmorHudConfig implements Serializable {
         Style(String translationKey) {
             this.translationKey = translationKey;
         }
-
-        @Override
-        public @NotNull String getKey() {
-            return translationKey;
-        }
     }
 
-    public enum WidgetShown implements SelectionListEntry.Translatable {
+    public enum WidgetShown {
         ALWAYS("armorhud.option.always"),
         IF_ANY_PRESENT("armorhud.option.ifAnyPresent"),
         NOT_EMPTY("armorhud.option.notEmpty");
@@ -234,14 +217,9 @@ public class ArmorHudConfig implements Serializable {
         WidgetShown(String translationKey) {
             this.translationKey = translationKey;
         }
-
-        @Override
-        public @NotNull String getKey() {
-            return translationKey;
-        }
     }
 
-    public enum OffhandSlotBehavior implements SelectionListEntry.Translatable {
+    public enum OffhandSlotBehavior {
         ALWAYS_IGNORE("armorhud.option.alwaysIgnore"),
         ADHERE("armorhud.option.adhere"),
         ALWAYS_LEAVE_SPACE("armorhud.option.alwaysLeaveSpace");
@@ -250,11 +228,6 @@ public class ArmorHudConfig implements Serializable {
 
         OffhandSlotBehavior(String translationKey) {
             this.translationKey = translationKey;
-        }
-
-        @Override
-        public @NotNull String getKey() {
-            return translationKey;
         }
     }
 
@@ -277,75 +250,5 @@ public class ArmorHudConfig implements Serializable {
         } catch (IOException e) {
             ArmorHudMod.LOGGER.error("Unable to write config to file!", e);
         }
-    }
-
-    public Screen createScreen(Screen parent) {
-        ConfigBuilder builder = ConfigBuilder.create()
-                                             .setTitle(translatable("armorhud.config"))
-                                             .setParentScreen(parent)
-                                             .setSavingRunnable(this::save);
-        ConfigEntryBuilder entries = builder.entryBuilder();
-        builder.getOrCreateCategory(translatable("armorhud.name"))
-               .addEntry(
-                   entries.startBooleanToggle(translatable("armorhud.option.enabled"), enabled)
-                          .setSaveConsumer(this::setEnabled).build())
-               .addEntry(
-                   entries.startEnumSelector(translatable("armorhud.option.anchor"), Anchor.class, anchor)
-                          .setSaveConsumer(this::setAnchor).build())
-               .addEntry(
-                   entries.startEnumSelector(translatable("armorhud.option.side"), Arm.class, side)
-                          .setSaveConsumer(this::setSide).build())
-               .addEntry(
-                   entries.startIntField(translatable("armorhud.option.offsetX"), offsetX)
-                          .setSaveConsumer(this::setOffsetX).build())
-               .addEntry(
-                   entries.startIntField(translatable("armorhud.option.offsetY"), offsetY)
-                          .setSaveConsumer(this::setOffsetY).build())
-               .addEntry(
-                   entries.startBooleanToggle(translatable("armorhud.option.orientation"), vertical)
-                          .setSaveConsumer(this::setVertical).build())
-               .addEntry(
-                   entries.startEnumSelector(translatable("armorhud.option.style"), Style.class, style)
-                          .setSaveConsumer(this::setStyle).build())
-               .addEntry(
-                   entries.startBooleanToggle(translatable("armorhud.option.durabilityNumbers"), durabilityNumbers)
-                          .setSaveConsumer(this::setDurabilityNumbers).build())
-               .addEntry(
-                   entries.startEnumSelector(translatable("armorhud.option.widgetShown"), WidgetShown.class,
-                                             widgetShown)
-                          .setSaveConsumer(this::setWidgetShown).build())
-               .addEntry(
-                   entries.startEnumSelector(translatable("armorhud.option.offhandSlotBehavior"),
-                                             OffhandSlotBehavior.class, offhandSlotBehavior)
-                          .setSaveConsumer(this::setOffhandSlotBehavior).build())
-               .addEntry(
-                   entries.startBooleanToggle(translatable("armorhud.option.pushBossbars"), pushBossbars)
-                          .setSaveConsumer(this::setPushBossbars).build())
-               .addEntry(
-                   entries.startBooleanToggle(translatable("armorhud.option.pushIcons"), pushStatusEffectIcons)
-                          .setSaveConsumer(this::setPushStatusEffectIcons).build())
-               .addEntry(
-                   entries.startBooleanToggle(translatable("armorhud.option.pushSubtitles"), pushSubtitles)
-                          .setSaveConsumer(this::setPushSubtitles).build())
-               .addEntry(
-                   entries.startBooleanToggle(translatable("armorhud.option.reversed"), reversed)
-                          .setSaveConsumer(this::setReversed).build())
-               .addEntry(
-                   entries.startBooleanToggle(translatable("armorhud.option.showIcons"), iconsShown)
-                          .setSaveConsumer(this::setIconsShown).build())
-               .addEntry(
-                   entries.startBooleanToggle(translatable("armorhud.option.showWarning"), warningShown)
-                          .setSaveConsumer(this::setWarningShown).build())
-               .addEntry(
-                   entries.startIntField(translatable("armorhud.option.minDuraValue"), minDurabilityValue)
-                          .setSaveConsumer(this::setMinDurabilityValue).build())
-               .addEntry(
-                   entries.startIntSlider(translatable("armorhud.option.minDuraPercent"),
-                                          (int)(minDurabilityPercentage * 100.0), 0, 100)
-                          .setSaveConsumer(this::setMinDurabilityPercentage).build())
-               .addEntry(
-                   entries.startIntField(translatable("armorhud.option.iconBobIntensity"), warningBobIntensity)
-                          .setSaveConsumer(this::setWarningBobIntensity).build());
-        return builder.build();
     }
 }

@@ -9,7 +9,7 @@ Position and other parameters of the widget can be adjusted in the configuration
 
 ## Features:
 
-- Support for both Neoforge and Fabric
+- Support for both NeoForge and Fabric
 - Vertical mode
 - Different anchors:
     - Top
@@ -27,7 +27,7 @@ Position and other parameters of the widget can be adjusted in the configuration
 
 ## Configuration
 
-You can configure the mod using Mod Menu on Fabric and the mod list on Neoforge or by using the JSON file in the
+You can configure the mod using Mod Menu on Fabric and the mod list on NeoForge or by using the JSON file in the
 `config` folder.
 Powered by [Cloth Config](https://modrinth.com/mod/cloth-config).
 

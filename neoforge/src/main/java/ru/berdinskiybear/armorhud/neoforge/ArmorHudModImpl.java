@@ -3,6 +3,7 @@ package ru.berdinskiybear.armorhud.neoforge;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.ModLoadingContext;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
@@ -12,6 +13,7 @@ import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.event.GameShuttingDownEvent;
 import ru.berdinskiybear.armorhud.ArmorHudMod;
+import ru.berdinskiybear.armorhud.config.ArmorHudClothConfig;
 import ru.berdinskiybear.armorhud.config.ArmorHudConfig;
 
 import java.nio.file.Path;
@@ -21,10 +23,10 @@ import java.nio.file.Path;
 public class ArmorHudModImpl {
     public ArmorHudModImpl(IEventBus bus, Dist dist) {
         bus.addListener(ArmorHudModImpl::registerKeybinds);
-        if (dist.isClient())
+        if (dist.isClient() && ModList.get().isLoaded("cloth_config"))
             ModLoadingContext.get().registerExtensionPoint(
                 IConfigScreenFactory.class,
-                () -> (container, parent) -> ArmorHudConfig.CONFIG.createScreen(parent));
+                () -> (container, parent) -> ArmorHudClothConfig.createScreen(parent));
     }
 
     public static Path configDir() {

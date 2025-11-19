@@ -7,7 +7,7 @@
   "armorhud.option.side": "Side",
   "armorhud.option.offsetX": "X Offset",
   "armorhud.option.offsetY": "Y Offset",
-  "armorhud.option.orientation": "Vertical",
+  "armorhud.option.vertical": "Vertical",
   "armorhud.option.style": "Style",
   "armorhud.option.durabilityNumbers": "Show Durability Numbers",
   "armorhud.option.widgetShown": "Show Widget",

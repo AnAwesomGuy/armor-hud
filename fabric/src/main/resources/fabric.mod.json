@@ -10,8 +10,9 @@
     "AnAwesomGuy"
   ],
   "contact": {
-    "homepage": "https://github.com/AnAwesomGuy/armor-hud/",
-    "issues": "https://github.com/AnAwesomGuy/armor-hud/issues"
+    "homepage": "https://modrinth.com/mod/${modrinth_id}",
+    "sources": "https://github.com/${github}",
+    "issues": "https://github.com/${github}/issues"
   },
   "license": "MIT",
   "icon": "assets/${mod_id}/icon.png",
@@ -29,7 +30,11 @@
   ],
   "depends": {
     "fabricloader": ">=0.15",
-    "minecraft": "~1.21.1"
+    "fabric-api": "*",
+    "minecraft": ">=1.20 <=1.21.1"
+  },
+  "suggests": {
+    "cloth-config": "*"
   },
   "breaks": {
     "ukus_armor_hud": "*"
