@@ -174,7 +174,7 @@ public class ArmorHudConfig implements Serializable {
     //endregion
 
     public void toggleEnabled() {
-        setEnabled(!isDisabled());
+        setEnabled(isDisabled());
     }
 
     public enum Anchor {
