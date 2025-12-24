@@ -35,7 +35,7 @@ public class ArmorHudModImpl {
 
     @SubscribeEvent
     public static void endClientTick(ClientTickEvent.Post event) {
-        while (ArmorHudMod.TOGGLE_HUD.wasPressed())
+        while (ArmorHudMod.TOGGLE_HUD.consumeClick())
             ArmorHudConfig.CONFIG.toggleEnabled();
     }
 

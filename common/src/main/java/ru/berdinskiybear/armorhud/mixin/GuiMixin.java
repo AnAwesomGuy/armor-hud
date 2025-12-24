@@ -3,13 +3,13 @@ package ru.berdinskiybear.armorhud.mixin;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalIntRef;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.hud.InGameHud;
-import net.minecraft.client.render.RenderTickCounter;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Arm;
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -21,35 +21,35 @@ import ru.berdinskiybear.armorhud.config.ArmorHudConfig;
 
 import java.util.List;
 
-@Mixin(InGameHud.class)
-public abstract class InGameHudMixin {
+@Mixin(Gui.class)
+public abstract class GuiMixin {
     @Shadow
     @Final
-    private MinecraftClient client;
+    private Minecraft minecraft;
     @Shadow
-    private int ticks;
+    private int tickCount;
 
     @Shadow
-    protected abstract PlayerEntity getCameraPlayer();
+    protected abstract Player getCameraPlayer();
 
-    @Inject(method = "renderHotbarVanilla", at = @At("TAIL"))
-    public void renderArmorHud(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
+    @Inject(method = "renderItemHotbar", at = @At("TAIL"))
+    public void renderArmorHud(GuiGraphics context, DeltaTracker tickCounter, CallbackInfo ci) {
         ArmorHudConfig config = ArmorHudConfig.CONFIG;
         if (config.isDisabled()) return;
 
-        PlayerEntity player = getCameraPlayer();
+        Player player = getCameraPlayer();
         if (player == null) return;
 
-        ArmorHudMod.render((InGameHudAccessor)this, context, tickCounter, player, client, ticks);
+        ArmorHudMod.render((GuiAccessor)this, context, tickCounter, player, minecraft, tickCount);
     }
 
-    @Inject(method = "renderStatusEffectOverlay", at = @At(value = "INVOKE", target = "Ljava/util/List;iterator()Ljava/util/Iterator;"))
-    public void calculateStatusEffectIconsOffset(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci, @Share("shift") LocalIntRef shiftRef) {
+    @Inject(method = "renderEffects", at = @At(value = "INVOKE", target = "Ljava/util/List;iterator()Ljava/util/Iterator;"))
+    public void calculateStatusEffectIconsOffset(GuiGraphics context, DeltaTracker tickCounter, CallbackInfo ci, @Share("shift") LocalIntRef shiftRef) {
         ArmorHudConfig config = ArmorHudConfig.CONFIG;
         if (config.isDisabled() || !config.isPushStatusEffectIcons() || config.getAnchor() != ArmorHudConfig.Anchor.TOP
-            || config.getSide() != Arm.RIGHT) return;
+            || config.getSide() != HumanoidArm.RIGHT) return;
 
-        PlayerEntity player = this.getCameraPlayer();
+        Player player = this.getCameraPlayer();
         if (player == null) return;
 
         List<ItemStack> armor = ArmorHudMod.nonEmptyArmor(player);
@@ -65,7 +65,7 @@ public abstract class InGameHudMixin {
         shiftRef.set(Math.max(newShift, 0));
     }
 
-    @ModifyExpressionValue(method = "renderStatusEffectOverlay", at = @At(value = "CONSTANT", args = "intValue=1"))
+    @ModifyExpressionValue(method = "renderEffects", at = @At(value = "CONSTANT", args = "intValue=1"))
     public int statusEffectIconsOffset(int y, @Share("shift") LocalIntRef shiftRef) {
         return y + shiftRef.get();
     }

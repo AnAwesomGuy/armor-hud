@@ -16,7 +16,7 @@ public class ArmorHudModImpl implements ClientModInitializer {
         KeyBindingHelper.registerKeyBinding(ArmorHudMod.TOGGLE_HUD);
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            while (ArmorHudMod.TOGGLE_HUD.wasPressed())
+            while (ArmorHudMod.TOGGLE_HUD.consumeClick())
                 ArmorHudConfig.CONFIG.toggleEnabled();
         });
 

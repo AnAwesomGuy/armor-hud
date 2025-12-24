@@ -1,9 +1,9 @@
 package ru.berdinskiybear.armorhud.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import net.minecraft.client.gui.hud.BossBarHud;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
+import net.minecraft.client.gui.components.BossHealthOverlay;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import ru.berdinskiybear.armorhud.ArmorHudMod;
@@ -11,15 +11,15 @@ import ru.berdinskiybear.armorhud.config.ArmorHudConfig;
 
 import java.util.List;
 
-@Mixin(BossBarHud.class)
-public class BossBarHudMixin {
+@Mixin(BossHealthOverlay.class)
+public class BossHealthOverlayMixin {
     @ModifyExpressionValue(method = "render", at = @At(value = "CONSTANT", args = "intValue=12"))
     public int pushBossBars(int y) {
         ArmorHudConfig config = ArmorHudConfig.CONFIG;
         if (config.isDisabled() || !config.isPushBossbars() || config.getAnchor() != ArmorHudConfig.Anchor.TOP_CENTER)
             return y;
 
-        PlayerEntity player = ArmorHudMod.getCameraPlayer();
+        Player player = ArmorHudMod.getCameraPlayer();
         if (player == null) return y;
 
         final int orig = y;

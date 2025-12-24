@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.InstanceCreator;
 import com.google.gson.JsonSyntaxException;
-import net.minecraft.util.Arm;
+import net.minecraft.world.entity.HumanoidArm;
 import ru.berdinskiybear.armorhud.ArmorHudMod;
 
 import java.io.IOException;
@@ -33,7 +33,7 @@ public class ArmorHudConfig implements Serializable {
 
     public boolean enabled = true;
     public Anchor anchor = Anchor.HOTBAR;
-    public Arm side = Arm.LEFT;
+    public HumanoidArm side = HumanoidArm.LEFT;
     public int offsetX = 0;
     public int offsetY = 0;
     public boolean vertical = false;
@@ -65,10 +65,10 @@ public class ArmorHudConfig implements Serializable {
     public void setAnchor(Anchor anchor) {
         this.anchor = anchor;
     }
-    public Arm getSide() {
+    public HumanoidArm getSide() {
         return side;
     }
-    public void setSide(Arm side) {
+    public void setSide(HumanoidArm side) {
         this.side = side;
     }
     public int getOffsetX() {

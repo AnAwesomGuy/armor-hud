@@ -1,69 +1,69 @@
 package ru.berdinskiybear.armorhud;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import dev.architectury.injectables.annotations.ExpectPlatform;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.option.AttackIndicator;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.render.RenderTickCounter;
-import net.minecraft.client.texture.Sprite;
-import net.minecraft.client.texture.SpriteAtlasTexture;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.PlayerScreenHandler;
-import net.minecraft.util.Arm;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.client.AttackIndicatorStatus;
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.berdinskiybear.armorhud.config.ArmorHudConfig;
-import ru.berdinskiybear.armorhud.mixin.InGameHudAccessor;
-import ru.berdinskiybear.armorhud.mixin.PlayerScreenHandlerAccessor;
+import ru.berdinskiybear.armorhud.mixin.GuiAccessor;
+import ru.berdinskiybear.armorhud.mixin.InventoryMenuMixin;
 
 import java.nio.file.Path;
 import java.util.List;
 
-import static ru.berdinskiybear.armorhud.mixin.InGameHudAccessor.getHOTBAR_OFFHAND_LEFT_TEXTURE;
-import static ru.berdinskiybear.armorhud.mixin.InGameHudAccessor.getHOTBAR_TEXTURE;
+import static ru.berdinskiybear.armorhud.mixin.GuiAccessor.getHOTBAR_OFFHAND_LEFT_SPRITE;
+import static ru.berdinskiybear.armorhud.mixin.GuiAccessor.getHOTBAR_SPRITE;
 
 public final class ArmorHudMod {
     public static final String MOD_ID = "armor_hud";
 
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-    public static final KeyBinding TOGGLE_HUD = new KeyBinding("armorhud.keybind.toggle", GLFW.GLFW_KEY_UNKNOWN,
+    public static final KeyMapping TOGGLE_HUD = new KeyMapping("armorhud.keybind.toggle", GLFW.GLFW_KEY_UNKNOWN,
                                                                "armorhud.name");
 
-    public static final Identifier WARNING_TEXTURE = Identifier.of(ArmorHudMod.MOD_ID, "warn.png");
+    public static final ResourceLocation WARNING_TEXTURE = ResourceLocation.fromNamespaceAndPath(ArmorHudMod.MOD_ID, "warn.png");
 
     public static final int STEP = 20, SIZE = 22, EDGE_SIZE = 3,
         HOTBAR_OFFSET = 98, OFFHAND_OFFSET = SIZE + 7, ATTACK_INDICATOR_OFFSET = 23, WARNING_OFFSET = 4; // constants
 
     @Nullable
-    public static PlayerEntity getCameraPlayer() {
-        return MinecraftClient.getInstance().getCameraEntity() instanceof PlayerEntity player ? player : null;
+    public static Player getCameraPlayer() {
+        return Minecraft.getInstance().getCameraEntity() instanceof Player player ? player : null;
     }
 
-    public static List<ItemStack> nonEmptyArmor(PlayerEntity player) {
+    public static List<ItemStack> nonEmptyArmor(Player player) {
         return player.getInventory().armor.stream().filter(s -> !s.isEmpty()).toList();
     }
 
     public static boolean shouldShowWarning(ItemStack stack) {
-        if (stack.isEmpty() || !stack.isDamageable()) return false;
+        if (stack.isEmpty() || !stack.isDamageableItem()) return false;
 
-        final int damage = stack.getDamage();
+        final int damage = stack.getDamageValue();
         final int maxDamage = stack.getMaxDamage();
         return maxDamage - damage <= ArmorHudConfig.CONFIG.getMinDurabilityValue() ||
             (1.0 - ((double)damage / (double)maxDamage)) <= ArmorHudConfig.CONFIG.getMinDurabilityPercentage();
     }
 
     // message me on discord if you need help reading this, i can try to explain (or ask ai or smth idk)
-    public static void render(InGameHudAccessor hud, DrawContext context, RenderTickCounter tickCounter, PlayerEntity player, MinecraftClient client, int ticks) {
+    public static void render(GuiAccessor gui, GuiGraphics context, DeltaTracker tickCounter, Player player, Minecraft client, int ticks) {
         final ArmorHudConfig config = ArmorHudConfig.CONFIG;
         final List<ItemStack> armor = player.getInventory().armor; // fetch armor items
         final int armorSize = armor.size();
@@ -73,10 +73,10 @@ public final class ArmorHudMod {
         if (nonEmptyCount == 0 && config.getWidgetShown() != ArmorHudConfig.WidgetShown.ALWAYS)
             return;
 
-        final MatrixStack matrices = context.getMatrices();
+        final PoseStack matrices = context.pose();
         final ArmorHudConfig.Anchor anchor = config.getAnchor();
         final boolean anchorTop = anchor.isTop();
-        final boolean right = config.getSide() == Arm.RIGHT;
+        final boolean right = config.getSide() == HumanoidArm.RIGHT;
         boolean vertical = config.isVertical();
         final boolean showEmpty = config.getWidgetShown() != ArmorHudConfig.WidgetShown.NOT_EMPTY;
         final int slots = showEmpty ? armorSize : nonEmptyCount;
@@ -96,7 +96,7 @@ public final class ArmorHudMod {
 
         int widgetX = config.getOffsetX() * sideMultiplier;
         if (anchor == ArmorHudConfig.Anchor.TOP_CENTER) {
-            widgetX += (context.getScaledWindowWidth() - widgetSize) / 2;
+            widgetX += (context.guiWidth() - widgetSize) / 2;
             if (vertical) {
                 config.setVertical(vertical = false);
                 LOGGER.warn("Disabling vertical mode because the top center anchor is incompatible!");
@@ -107,32 +107,32 @@ public final class ArmorHudMod {
                 case ALWAYS_LEAVE_SPACE -> OFFHAND_OFFSET;
                 case ADHERE -> {
                     if (player.getMainArm().getOpposite() == config.getSide())
-                        if (!player.getOffHandStack().isEmpty())
+                        if (!player.getOffhandItem().isEmpty())
                             yield OFFHAND_OFFSET;
-                        else if (client.options.getAttackIndicator().getValue() == AttackIndicator.HOTBAR)
+                        else if (client.options.attackIndicator().get() == AttackIndicatorStatus.HOTBAR)
                             yield ATTACK_INDICATOR_OFFSET;
                     yield 0;
                 }
             };
-            widgetX += context.getScaledWindowWidth() / 2 + (HOTBAR_OFFSET + addedHotbarOffset) * sideMultiplier + widgetSize * sideOffsetMultiplier;
+            widgetX += context.guiWidth() / 2 + (HOTBAR_OFFSET + addedHotbarOffset) * sideMultiplier + widgetSize * sideOffsetMultiplier;
             if (vertical) {
                 config.setVertical(vertical = false);
                 LOGGER.warn("Disabling vertical mode because the hotbar anchor is incompatible!");
             }
         } else if (vertical)
-            widgetX += (SIZE - context.getScaledWindowWidth()) * sideOffsetMultiplier;
+            widgetX += (SIZE - context.guiWidth()) * sideOffsetMultiplier;
         else if (anchor == ArmorHudConfig.Anchor.TOP || anchor == ArmorHudConfig.Anchor.BOTTOM)
-            widgetX += (widgetSize - context.getScaledWindowWidth()) * sideOffsetMultiplier;
+            widgetX += (widgetSize - context.guiWidth()) * sideOffsetMultiplier;
 
-        final int widgetY = anchorTop ? config.getOffsetY() : context.getScaledWindowHeight() - config.getOffsetY() - (vertical ? widgetSize : SIZE);
+        final int widgetY = anchorTop ? config.getOffsetY() : context.guiHeight() - config.getOffsetY() - (vertical ? widgetSize : SIZE);
 
         final int rotatedY, rotatedX;
         if (vertical) { // adjust for vertical
-            matrices.push();
+            matrices.pushPose();
             // rotate by 90 degrees to vertical
             // RotationAxis.POSITIVE_Z.rotationDegrees(90)
             // 0.7071067811865476 is sqrt(2) / 2 = sin(pi / 4) = sin(90/2 deg)
-            matrices.multiply(new Quaternionf(0, 0, 0.7071067811865476F, 0.7071067811865476F));
+            matrices.mulPose(new Quaternionf(0, 0, 0.7071067811865476F, 0.7071067811865476F));
             // here i "swap" the x and the y in order to have the correct position
             rotatedX = widgetY;
             rotatedY = -widgetX - SIZE;
@@ -147,42 +147,42 @@ public final class ArmorHudMod {
         // 29 and 24 is the width and height of the offhand texture
         switch (config.getStyle()) {
             case HOTBAR -> {
-                context.drawGuiTexture(getHOTBAR_TEXTURE(), 182, 22, 0, 0,
+                context.blitSprite(getHOTBAR_SPRITE(), 182, 22, 0, 0,
                                        rotatedX, rotatedY, widgetSize - EDGE_SIZE, SIZE); // left part
-                context.drawGuiTexture(getHOTBAR_TEXTURE(), 182, 22, 182 - EDGE_SIZE, 0,
+                context.blitSprite(getHOTBAR_SPRITE(), 182, 22, 182 - EDGE_SIZE, 0,
                                        rotatedX + widgetSize - EDGE_SIZE, rotatedY, EDGE_SIZE, SIZE); // right edge
             }
             case ROUNDED_CORNERS -> {
                 if (slots > 1) {
-                    context.drawGuiTexture(getHOTBAR_OFFHAND_LEFT_TEXTURE(), 29, 24, 0, 1,
+                    context.blitSprite(getHOTBAR_OFFHAND_LEFT_SPRITE(), 29, 24, 0, 1,
                                            rotatedX, rotatedY, EDGE_SIZE, SIZE); // round left edge
-                    context.drawGuiTexture(getHOTBAR_TEXTURE(), 182, 22, EDGE_SIZE, 0,
+                    context.blitSprite(getHOTBAR_SPRITE(), 182, 22, EDGE_SIZE, 0,
                                            rotatedX + EDGE_SIZE, rotatedY, widgetSize - 6, SIZE); // middle
-                    context.drawGuiTexture(getHOTBAR_OFFHAND_LEFT_TEXTURE(), 29, 24, SIZE - EDGE_SIZE, 1,
+                    context.blitSprite(getHOTBAR_OFFHAND_LEFT_SPRITE(), 29, 24, SIZE - EDGE_SIZE, 1,
                                            rotatedX + widgetSize - EDGE_SIZE, rotatedY, EDGE_SIZE,
                                            SIZE); // round right edge
                 } else // only one round slot
-                    context.drawGuiTexture(getHOTBAR_OFFHAND_LEFT_TEXTURE(), 29, 24, 0, 1,
+                    context.blitSprite(getHOTBAR_OFFHAND_LEFT_SPRITE(), 29, 24, 0, 1,
                                            rotatedX, rotatedY, SIZE, SIZE);
             }
             case ROUNDED -> {
                 if (slots > 1) {
-                    context.drawGuiTexture(getHOTBAR_OFFHAND_LEFT_TEXTURE(), 29, 24, 0, 1,
+                    context.blitSprite(getHOTBAR_OFFHAND_LEFT_SPRITE(), 29, 24, 0, 1,
                                            rotatedX, rotatedY, SIZE - 1, SIZE); // left slot
                     for (int i = slots - 2; i >= 1; i--) // nothing happens if slots <= 2
-                        context.drawGuiTexture(getHOTBAR_OFFHAND_LEFT_TEXTURE(), 29, 24, 1, 1,
+                        context.blitSprite(getHOTBAR_OFFHAND_LEFT_SPRITE(), 29, 24, 1, 1,
                                                rotatedX + 1 + i * STEP, rotatedY, STEP, SIZE); // middle slots
-                    context.drawGuiTexture(getHOTBAR_OFFHAND_LEFT_TEXTURE(), 29, 24, 1, 1,
+                    context.blitSprite(getHOTBAR_OFFHAND_LEFT_SPRITE(), 29, 24, 1, 1,
                                            rotatedX + widgetSize - STEP - 1, rotatedY, SIZE - 1, SIZE); // right slot
                 } else // only one round slot
-                    context.drawGuiTexture(getHOTBAR_OFFHAND_LEFT_TEXTURE(), 29, 24, 0, 1,
+                    context.blitSprite(getHOTBAR_OFFHAND_LEFT_SPRITE(), 29, 24, 0, 1,
                                            rotatedX, rotatedY, SIZE, SIZE);
             }
             // case NONE -> (nothing!)
         }
 
         if (vertical)
-            matrices.pop(); // pop the rotation
+            matrices.popPose(); // pop the rotation
 
         // calculate warning offset
         int warningOffset = 0;
@@ -191,15 +191,15 @@ public final class ArmorHudMod {
             warningOffset = vertical ? (right ? -12 : STEP) : (anchorTop ? STEP : -WARNING_OFFSET - 8);
             if (intensity != 0) {
                 // sine wave that goes up and down for the bob
-                int bob = Math.round(MathHelper.sin(ticks / 2F) / 2F * intensity); // hi bob
+                int bob = Math.round(Mth.sin(ticks / 2F) / 2F * intensity); // hi bob
                 // invert bob if vertical and on the right or if anchored on the top
                 warningOffset += vertical ? bob * sideMultiplier : (anchorTop ? -bob : bob);
             }
         }
 
         // draw the armour items and the warning signs if necessary
-        SpriteAtlasTexture atlas = showEmpty && config.isIconsShown() ?
-            client.getBakedModelManager().getAtlas(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE) : null;
+        TextureAtlas atlas = showEmpty && config.isIconsShown() ?
+            client.getModelManager().getAtlas(InventoryMenu.BLOCK_ATLAS) : null;
         final boolean reversed = config.isReversed();
         final boolean showNumbers = config.isDurabilityNumbers();
         for (int i = 0, x = widgetX + EDGE_SIZE, y = widgetY + EDGE_SIZE; i < armorSize; i++) {
@@ -207,14 +207,14 @@ public final class ArmorHudMod {
             ItemStack stack = armor.get(index);
             if (!stack.isEmpty()) {
                 // draw item
-                hud.callRenderHotbarItem(context, x, y, tickCounter, player, stack, nonEmptyCount);
+                gui.callRenderSlot(context, x, y, tickCounter, player, stack, nonEmptyCount);
 
                 // render durability numbers
                 if (showNumbers) {
-                    TextRenderer textRenderer = client.textRenderer;
-                    int durability = stack.getMaxDamage() - stack.getDamage();
+                    Font textRenderer = client.font;
+                    int durability = stack.getMaxDamage() - stack.getDamageValue();
                     String s = String.valueOf(durability);
-                    int width = textRenderer.getWidth(s);
+                    int width = textRenderer.width(s);
                     float factor = 16F / width; // to adjust from unscaled to scaled you have to divide by the scale factor
                     int textX, textY;
                     if (vertical) {
@@ -231,28 +231,28 @@ public final class ArmorHudMod {
                         } else
                             textX = (int)(x / factor) + 1;
                         textY = (int)(anchorTop ? (widgetY + SIZE + 2) / factor : (widgetY - 2) / factor - 7); // move down if top, up if bottom
-                        matrices.push();
+                        matrices.pushPose();
                         matrices.scale(factor, factor, 0F); // scale
                     }
                     // this math hurt my brain but it works :D
-                    context.drawText(textRenderer, s, textX, textY, stack.getItemBarColor(), true);
+                    context.drawString(textRenderer, s, textX, textY, stack.getBarColor(), true);
                     if (!vertical)
-                        matrices.pop(); // pop 🫧
+                        matrices.popPose(); // pop 🫧
                 }
 
                 // draw warning (above durability numbers)
                 if (config.isWarningShown() && ArmorHudMod.shouldShowWarning(stack)) {
-                    context.drawTexture(ArmorHudMod.WARNING_TEXTURE,
+                    context.blit(ArmorHudMod.WARNING_TEXTURE,
                                         x + (vertical ? warningOffset : WARNING_OFFSET),
                                         y + (vertical ? WARNING_OFFSET : warningOffset),
                                         -1, 0, 0, 8, 8, 8, 8); // z = -1 to appear behind the text
                 }
             } else if (atlas != null) { // background slot icons (if slot is empty and the config says so)
-                Identifier spriteId =
-                    PlayerScreenHandlerAccessor.getEMPTY_ARMOR_SLOT_TEXTURES()
-                                               .get(PlayerScreenHandlerAccessor.getEQUIPMENT_SLOT_ORDER()[index]);
-                Sprite sprite = atlas.getSprite(spriteId);
-                context.drawSprite(x, y, 0, 16, 16, sprite);
+                ResourceLocation spriteId =
+                    InventoryMenuMixin.getTEXTURE_EMPTY_SLOTS()
+                                      .get(InventoryMenuMixin.getSLOT_IDS()[index]);
+                TextureAtlasSprite sprite = atlas.getSprite(spriteId);
+                context.blit(x, y, 0, 16, 16, sprite);
             }
 
             if (!stack.isEmpty() || showEmpty)
