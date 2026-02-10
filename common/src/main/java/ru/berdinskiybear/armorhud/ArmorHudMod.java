@@ -23,7 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.berdinskiybear.armorhud.config.ArmorHudConfig;
 import ru.berdinskiybear.armorhud.mixin.GuiAccessor;
-import ru.berdinskiybear.armorhud.mixin.InventoryMenuMixin;
+import ru.berdinskiybear.armorhud.mixin.InventoryMenuAccessor;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -249,8 +249,8 @@ public final class ArmorHudMod {
                 }
             } else if (atlas != null) { // background slot icons (if slot is empty and the config says so)
                 ResourceLocation spriteId =
-                    InventoryMenuMixin.getTEXTURE_EMPTY_SLOTS()
-                                      .get(InventoryMenuMixin.getSLOT_IDS()[index]);
+                    InventoryMenuAccessor.getTEXTURE_EMPTY_SLOTS()
+                                         .get(InventoryMenuAccessor.getSLOT_IDS()[index]);
                 TextureAtlasSprite sprite = atlas.getSprite(spriteId);
                 context.blit(x, y, 0, 16, 16, sprite);
             }

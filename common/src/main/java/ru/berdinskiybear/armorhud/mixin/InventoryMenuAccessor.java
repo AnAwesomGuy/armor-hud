@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 import java.util.Map;
 
 @Mixin(InventoryMenu.class)
-public interface InventoryMenuMixin {
+public interface InventoryMenuAccessor {
     @Accessor
     static Map<EquipmentSlot, ResourceLocation> getTEXTURE_EMPTY_SLOTS() {
         throw new AssertionError();
