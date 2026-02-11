@@ -131,9 +131,10 @@ public final class ArmorHudMod {
             matrices.pushPose();
             // rotate by 90 degrees to vertical
             // RotationAxis.POSITIVE_Z.rotationDegrees(90)
-            // 0.7071067811865476 is sqrt(2) / 2 = sin(pi / 4) = sin(90/2 deg)
+            // 0.7071067811865476 is sqrt(2) / 2 = sqrt(0.5) = sin(pi / 4) = sin(90/2 deg)
             matrices.mulPose(new Quaternionf(0, 0, 0.7071067811865476F, 0.7071067811865476F));
             // here i "swap" the x and the y in order to have the correct position
+            // noinspection SuspiciousNameCombination (yes ik it's strange)
             rotatedX = widgetY;
             rotatedY = -widgetX - SIZE;
         } else {
@@ -148,35 +149,35 @@ public final class ArmorHudMod {
         switch (config.getStyle()) {
             case HOTBAR -> {
                 context.blitSprite(getHOTBAR_SPRITE(), 182, 22, 0, 0,
-                                       rotatedX, rotatedY, widgetSize - EDGE_SIZE, SIZE); // left part
+                                   rotatedX, rotatedY, widgetSize - EDGE_SIZE, SIZE); // left part
                 context.blitSprite(getHOTBAR_SPRITE(), 182, 22, 182 - EDGE_SIZE, 0,
-                                       rotatedX + widgetSize - EDGE_SIZE, rotatedY, EDGE_SIZE, SIZE); // right edge
+                                   rotatedX + widgetSize - EDGE_SIZE, rotatedY, EDGE_SIZE, SIZE); // right edge
             }
             case ROUNDED_CORNERS -> {
                 if (slots > 1) {
                     context.blitSprite(getHOTBAR_OFFHAND_LEFT_SPRITE(), 29, 24, 0, 1,
-                                           rotatedX, rotatedY, EDGE_SIZE, SIZE); // round left edge
+                                       rotatedX, rotatedY, EDGE_SIZE, SIZE); // round left edge
                     context.blitSprite(getHOTBAR_SPRITE(), 182, 22, EDGE_SIZE, 0,
-                                           rotatedX + EDGE_SIZE, rotatedY, widgetSize - 6, SIZE); // middle
+                                       rotatedX + EDGE_SIZE, rotatedY, widgetSize - 6, SIZE); // middle
                     context.blitSprite(getHOTBAR_OFFHAND_LEFT_SPRITE(), 29, 24, SIZE - EDGE_SIZE, 1,
-                                           rotatedX + widgetSize - EDGE_SIZE, rotatedY, EDGE_SIZE,
-                                           SIZE); // round right edge
+                                       rotatedX + widgetSize - EDGE_SIZE, rotatedY, EDGE_SIZE,
+                                       SIZE); // round right edge
                 } else // only one round slot
                     context.blitSprite(getHOTBAR_OFFHAND_LEFT_SPRITE(), 29, 24, 0, 1,
-                                           rotatedX, rotatedY, SIZE, SIZE);
+                                       rotatedX, rotatedY, SIZE, SIZE);
             }
             case ROUNDED -> {
                 if (slots > 1) {
                     context.blitSprite(getHOTBAR_OFFHAND_LEFT_SPRITE(), 29, 24, 0, 1,
-                                           rotatedX, rotatedY, SIZE - 1, SIZE); // left slot
+                                       rotatedX, rotatedY, SIZE - 1, SIZE); // left slot
                     for (int i = slots - 2; i >= 1; i--) // nothing happens if slots <= 2
                         context.blitSprite(getHOTBAR_OFFHAND_LEFT_SPRITE(), 29, 24, 1, 1,
-                                               rotatedX + 1 + i * STEP, rotatedY, STEP, SIZE); // middle slots
+                                           rotatedX + 1 + i * STEP, rotatedY, STEP, SIZE); // middle slots
                     context.blitSprite(getHOTBAR_OFFHAND_LEFT_SPRITE(), 29, 24, 1, 1,
-                                           rotatedX + widgetSize - STEP - 1, rotatedY, SIZE - 1, SIZE); // right slot
+                                       rotatedX + widgetSize - STEP - 1, rotatedY, SIZE - 1, SIZE); // right slot
                 } else // only one round slot
                     context.blitSprite(getHOTBAR_OFFHAND_LEFT_SPRITE(), 29, 24, 0, 1,
-                                           rotatedX, rotatedY, SIZE, SIZE);
+                                       rotatedX, rotatedY, SIZE, SIZE);
             }
             // case NONE -> (nothing!)
         }
@@ -201,7 +202,7 @@ public final class ArmorHudMod {
         TextureAtlas atlas = showEmpty && config.isIconsShown() ?
             client.getModelManager().getAtlas(InventoryMenu.BLOCK_ATLAS) : null;
         final boolean reversed = config.isReversed();
-        final boolean showNumbers = config.isDurabilityNumbers();
+        final ArmorHudConfig.DurabilityDisplay durabilityDisplay = config.getDurabilityDisplay();
         for (int i = 0, x = widgetX + EDGE_SIZE, y = widgetY + EDGE_SIZE; i < armorSize; i++) {
             int index = reversed ? i : armorSize - i - 1;
             ItemStack stack = armor.get(index);
@@ -210,29 +211,36 @@ public final class ArmorHudMod {
                 gui.callRenderSlot(context, x, y, tickCounter, player, stack, nonEmptyCount);
 
                 // render durability numbers
-                if (showNumbers) {
+                if (durabilityDisplay != ArmorHudConfig.DurabilityDisplay.BAR && stack.isDamageableItem()) {
                     Font textRenderer = client.font;
-                    int durability = stack.getMaxDamage() - stack.getDamageValue();
-                    String s = String.valueOf(durability);
+                    String s = switch (durabilityDisplay) {
+                        case NUMERIC -> String.valueOf(stack.getMaxDamage() - stack.getDamageValue());
+                        // truncates
+                        case PERCENTAGE -> (100 - (stack.getDamageValue() * 100) / stack.getMaxDamage()) + "%";
+                        default -> throw new IllegalStateException("impossible durability style?!");
+                    };
                     int width = textRenderer.width(s);
-                    float factor = 16F / width; // to adjust from unscaled to scaled you have to divide by the scale factor
                     int textX, textY;
                     if (vertical) {
                         // textX = x + SIZE + sideOffsetMultiplier * (width + SIZE + 3)
                         // textX = x + (width + 3) * sideOffsetMultiplier + SIZE * (sideOffsetMultiplier + 1)
                         // why am i even trying to optimize this? this is already very clean
                         textX = widgetX + (right ? -width - 2 : SIZE + 2); // if true then it's right, if false it's left
-                        textY = y + 4; // (16 - 8) / 2 -> (16 - text height) / 2
+                        textY = y + 4; // center the text vertically
                     } else {
+                        float factor = 16F / width; // to adjust from unscaled to scaled you have to divide by the scale factor
                         // center text and cap factor at 1
                         if (factor > 1F) {
                             factor = 1F;
                             textX = x + (16 - width) / 2;
                         } else
                             textX = (int)(x / factor) + 1;
-                        textY = (int)(anchorTop ? (widgetY + SIZE + 2) / factor : (widgetY - 2) / factor - 7); // move down if top, up if bottom
+                        // margin of 2 pixels between text and item
+                        textY = (int)(anchorTop ?
+                            (widgetY + SIZE + 2) / factor :
+                            ((widgetY - 2) / factor) - textRenderer.lineHeight + 2); // move down if top, up if bottom
                         matrices.pushPose();
-                        matrices.scale(factor, factor, 0F); // scale
+                        matrices.scale(factor, factor, factor); // scale
                     }
                     // this math hurt my brain but it works :D
                     context.drawString(textRenderer, s, textX, textY, stack.getBarColor(), true);
@@ -243,9 +251,9 @@ public final class ArmorHudMod {
                 // draw warning (above durability numbers)
                 if (config.isWarningShown() && ArmorHudMod.shouldShowWarning(stack)) {
                     context.blit(ArmorHudMod.WARNING_TEXTURE,
-                                        x + (vertical ? warningOffset : WARNING_OFFSET),
-                                        y + (vertical ? WARNING_OFFSET : warningOffset),
-                                        -1, 0, 0, 8, 8, 8, 8); // z = -1 to appear behind the text
+                                 x + (vertical ? warningOffset : WARNING_OFFSET),
+                                 y + (vertical ? WARNING_OFFSET : warningOffset),
+                                 -1, 0, 0, 8, 8, 8, 8); // z = -1 to appear behind the text
                 }
             } else if (atlas != null) { // background slot icons (if slot is empty and the config says so)
                 ResourceLocation spriteId =

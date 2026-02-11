@@ -38,7 +38,7 @@ public class ArmorHudConfig implements Serializable {
     public int offsetY = 0;
     public boolean vertical = false;
     public Style style = Style.HOTBAR;
-    public boolean durabilityNumbers = false;
+    public DurabilityDisplay durabilityDisplay = DurabilityDisplay.BAR;
     public WidgetShown widgetShown = WidgetShown.NOT_EMPTY;
     public OffhandSlotBehavior offhandSlotBehavior = OffhandSlotBehavior.ADHERE;
     public boolean pushBossbars = true;
@@ -95,11 +95,11 @@ public class ArmorHudConfig implements Serializable {
     public void setStyle(Style style) {
         this.style = style;
     }
-    public boolean isDurabilityNumbers() {
-        return durabilityNumbers;
+    public DurabilityDisplay getDurabilityDisplay() {
+        return durabilityDisplay;
     }
-    public void setDurabilityNumbers(boolean durabilityNumbers) {
-        this.durabilityNumbers = durabilityNumbers;
+    public void setDurabilityDisplay(DurabilityDisplay durabilityDisplay) {
+        this.durabilityDisplay = durabilityDisplay;
     }
     public WidgetShown getWidgetShown() {
         return widgetShown;
@@ -203,6 +203,18 @@ public class ArmorHudConfig implements Serializable {
         public final String translationKey;
 
         Style(String translationKey) {
+            this.translationKey = translationKey;
+        }
+    }
+
+    public enum DurabilityDisplay {
+        BAR("armorhud.option.bar"),
+        NUMERIC("armorhud.option.numeric"),
+        PERCENTAGE("armorhud.option.percentage");
+
+        public final String translationKey;
+
+        DurabilityDisplay(String translationKey) {
             this.translationKey = translationKey;
         }
     }

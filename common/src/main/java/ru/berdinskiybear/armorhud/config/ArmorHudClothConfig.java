@@ -3,9 +3,9 @@ package ru.berdinskiybear.armorhud.config;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.HumanoidArm;
 import ru.berdinskiybear.armorhud.config.ArmorHudConfig.Anchor;
+import ru.berdinskiybear.armorhud.config.ArmorHudConfig.DurabilityDisplay;
 import ru.berdinskiybear.armorhud.config.ArmorHudConfig.OffhandSlotBehavior;
 import ru.berdinskiybear.armorhud.config.ArmorHudConfig.Style;
 import ru.berdinskiybear.armorhud.config.ArmorHudConfig.WidgetShown;
@@ -27,11 +27,11 @@ public interface ArmorHudClothConfig {
                .addEntry(
                    entries.startEnumSelector(translatable("armorhud.option.anchor"), Anchor.class,
                                              config.anchor)
-                          .setEnumNameProvider(e -> Component.translatable(((Anchor)e).translationKey))
+                          .setEnumNameProvider(e -> translatable(((Anchor)e).translationKey))
                           .setSaveConsumer(config::setAnchor).build())
                .addEntry(
                    entries.startEnumSelector(translatable("armorhud.option.side"), HumanoidArm.class, config.side)
-                          .setEnumNameProvider(e -> Component.translatable(((HumanoidArm)e).getKey()))
+                          .setEnumNameProvider(e -> translatable(((HumanoidArm)e).getKey()))
                           .setSaveConsumer(config::setSide).build())
                .addEntry(
                    entries.startIntField(translatable("armorhud.option.offsetX"), config.offsetX)
@@ -45,23 +45,24 @@ public interface ArmorHudClothConfig {
                .addEntry(
                    entries.startEnumSelector(translatable("armorhud.option.style"), Style.class,
                                              config.style)
-                          .setEnumNameProvider(e -> Component.translatable(((Style)e).translationKey))
+                          .setEnumNameProvider(e -> translatable(((Style)e).translationKey))
                           .setSaveConsumer(config::setStyle).build())
                .addEntry(
-                   entries.startBooleanToggle(translatable("armorhud.option.durabilityNumbers"),
-                                              config.durabilityNumbers)
-                          .setSaveConsumer(config::setDurabilityNumbers).build())
+                   entries.startEnumSelector(translatable("armorhud.option.durabilityDisplay"), DurabilityDisplay.class,
+                                             config.durabilityDisplay)
+                          .setEnumNameProvider(e -> translatable(((DurabilityDisplay)e).translationKey))
+                          .setSaveConsumer(config::setDurabilityDisplay).build())
                .addEntry(
-                   entries.startEnumSelector(translatable("armorhud.option.widgetShown"),
-                                             WidgetShown.class,
+                   entries.startEnumSelector(translatable("armorhud.option.widgetShown"), WidgetShown.class,
                                              config.widgetShown)
-                          .setEnumNameProvider(e -> Component.translatable(((WidgetShown)e).translationKey))
+                          .setEnumNameProvider(e -> translatable(((WidgetShown)e).translationKey))
                           .setSaveConsumer(config::setWidgetShown).build())
                .addEntry(
                    entries.startEnumSelector(translatable("armorhud.option.offhandSlotBehavior"),
-                                             OffhandSlotBehavior.class, config.offhandSlotBehavior)
+                                             OffhandSlotBehavior.class,
+                                             config.offhandSlotBehavior)
                           .setEnumNameProvider(
-                              e -> Component.translatable(((OffhandSlotBehavior)e).translationKey))
+                              e -> translatable(((OffhandSlotBehavior)e).translationKey))
                           .setSaveConsumer(config::setOffhandSlotBehavior).build())
                .addEntry(
                    entries.startBooleanToggle(translatable("armorhud.option.pushBossbars"), config.pushBossbars)
