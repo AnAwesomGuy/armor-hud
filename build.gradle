@@ -40,7 +40,7 @@ subprojects {
         minecraft "com.mojang:minecraft:${project.minecraft_version}"
         mappings loom.layered() {
             officialMojangMappings()
-            parchment("org.parchmentmc.data:parchment-1.21.1:2024.11.17@zip")
+            parchment("org.parchmentmc.data:parchment-1.21.11:2025.12.20@zip")
         }
     }
 
@@ -102,7 +102,7 @@ publishMods {
         file = fabricJar
         additionalFiles.from fabricSources
         version = project.version + "-fabric"
-        displayName = "[Fabric 1.21.1] $mod_name $project.version"
+        displayName = "[Fabric 1.21.11] $mod_name $project.version"
         modLoaders.addAll "fabric", "quilt"
     }
 
@@ -110,7 +110,7 @@ publishMods {
         file = neoForgeJar
         additionalFiles.from neoForgeSources
         version = project.version + "-neoforge"
-        displayName = "[Neo 1.21.1] $mod_name $project.version"
+        displayName = "[Neo 1.21.11] $mod_name $project.version"
         modLoaders.add "neoforge"
     }
 
@@ -130,36 +130,24 @@ publishMods {
 
     curseforge("curseFabric") {
         from curseOptions, fabric
-        minecraftVersionRange {
-            start = "1.21"
-            end = "1.21.1"
-        }
+        minecraftVersions.add("1.21.11")
         requires("fabric-api")
     }
 
     curseforge("curseNeoForge") {
         from curseOptions, neoForge
-        minecraftVersionRange {
-            start = "1.21"
-            end = "1.21.1"
-        }
+        minecraftVersions.add("1.21.11")
     }
 
     modrinth("modrinthFabric") {
         from modrinthOptions, fabric
-        minecraftVersionRange {
-            start = "1.21"
-            end = "1.21.1"
-        }
+        minecraftVersions.add("1.21.11")
         requires("fabric-api")
     }
 
     modrinth("modrinthNeoForge") {
         from modrinthOptions, neoForge
-        minecraftVersionRange {
-            start = "1.21"
-            end = "1.21.1"
-        }
+        minecraftVersions.add("1.21.11")
     }
 
     github {
@@ -167,7 +155,7 @@ publishMods {
         accessToken = providers.environmentVariable('GITHUB_TOKEN')
         dryRun = !accessToken.present
         repository = github
-        commitish = "1.21.1-multiloader"
+        commitish = "1.21.11-multiloader"
         tagName = project.version
     }
 }
