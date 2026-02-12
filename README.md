@@ -74,10 +74,13 @@ Powered by [Cloth Config](https://modrinth.com/mod/cloth-config).
         * `"ROUNDED"`
         * `"NONE"`
     * Default value: `"HOTBAR"`
-8. `"durabilityNumbers"`
-    * If the durability numbers should be shown.
-    * Type: boolean
-    * Default value: `false`
+8. `"durabilitydisplay"`
+    * The way durability is displayed in the HUD widget.
+    * Type: enum
+    * Possible values:
+        * `"BAR"`
+        * `"NUMBERS"`
+        * `"PERCENTAGE"`
 9. `"widgetShown"`
     * This setting defines when slots of the HUD widget are shown.
     * Type: enum
