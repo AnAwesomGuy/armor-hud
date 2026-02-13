@@ -1,5 +1,6 @@
 {
   "armorhud.name": "guy's Armor Hud",
+  "key.category.armorhud.keybinds": "guy's Armor Hud",
   "armorhud.config": "guy's Armor Hud Config",
 
   "armorhud.option.enabled": "Enabled",

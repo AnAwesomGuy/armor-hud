@@ -31,7 +31,7 @@ public interface ArmorHudClothConfig {
                           .setSaveConsumer(config::setAnchor).build())
                .addEntry(
                    entries.startEnumSelector(translatable("armorhud.option.side"), HumanoidArm.class, config.side)
-                          .setEnumNameProvider(e -> translatable(((HumanoidArm)e).getKey()))
+                          .setEnumNameProvider(e -> ((HumanoidArm)e).caption())
                           .setSaveConsumer(config::setSide).build())
                .addEntry(
                    entries.startIntField(translatable("armorhud.option.offsetX"), config.offsetX)
@@ -87,7 +87,7 @@ public interface ArmorHudClothConfig {
                           .setSaveConsumer(config::setMinDurabilityValue).build())
                .addEntry(
                    entries.startIntSlider(translatable("armorhud.option.minDuraPercent"),
-                                          (int)(config.minDurabilityPercentage * 100.0), 0, 100)
+                                          config.minDurabilityPercentage, 0, 100)
                           .setSaveConsumer(config::setMinDurabilityPercentage).build())
                .addEntry(
                    entries.startIntField(translatable("armorhud.option.iconBobIntensity"), config.warningBobIntensity)

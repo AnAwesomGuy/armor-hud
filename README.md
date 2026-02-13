@@ -122,11 +122,11 @@ Powered by [Cloth Config](https://modrinth.com/mod/cloth-config).
 17. `"minDurabilityValue"`
     * If durability value of a displayed item is equal or lower than this setting, a warning will be shown.
     * Type: integer
-    * Default value: `5`
+    * Default value: `10`
 18. `"minDurabilityPercentage"`
     * If durability of a displayed item is equal or below this percentage, a warning will be shown.
-    * Type: float
-    * Default value: `0.05`
+    * Type: integer
+    * Default value: `5`
 19. `"warningBobIntensity"`
     * This parameter defines how quickly warning icon will move up and down when shown.
       Lower the number quicker the motion.
