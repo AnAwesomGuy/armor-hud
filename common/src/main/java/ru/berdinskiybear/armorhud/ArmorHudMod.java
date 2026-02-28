@@ -215,7 +215,8 @@ public final class ArmorHudMod {
         int warningOffset = 0;
         if (config.isWarningShown()) {
             final int intensity = config.getWarningBobIntensity();
-            warningOffset = vertical ? (right ? -12 : STEP) : (anchorTop ? STEP : -WARNING_OFFSET - 8);
+            // warningOffset = vertical ? (right ? -12 : STEP) : (anchorTop ? STEP : -12);
+            warningOffset = (vertical && !right || !vertical && anchorTop) ? STEP : -8 - WARNING_OFFSET;
             if (intensity != 0) {
                 // sine wave that goes up and down for the bob
                 int bob = Math.round(Mth.sin(ticks / 2F) / 2F * intensity); // hi bob
@@ -226,10 +227,9 @@ public final class ArmorHudMod {
 
         // draw the armour items and the warning signs if necessary
         final boolean drawBackground = showEmpty && config.isIconsShown();
-        final boolean reversed = config.isReversed();
         final ArmorHudConfig.DurabilityDisplay durabilityDisplay = config.getDurabilityDisplay();
         for (int i = 0, x = widgetX + EDGE_SIZE, y = widgetY + EDGE_SIZE; i < 4; i++) {
-            int index = reversed ? i : 4 - i - 1;
+            int index = config.isReversed() ? 4 - i - 1 : i;
             ItemStack stack = player.getItemBySlot(SLOT_IDS[index]);
             if (!stack.isEmpty()) {
                 // draw item
