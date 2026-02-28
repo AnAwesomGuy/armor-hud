@@ -87,7 +87,7 @@ public interface ArmorHudClothConfig {
                           .setSaveConsumer(config::setMinDurabilityValue).build())
                .addEntry(
                    entries.startIntSlider(translatable("armorhud.option.minDuraPercent"),
-                                          (int)(config.minDurabilityPercentage * 100.0), 0, 100)
+                                          config.minDurabilityPercentage, 0, 100)
                           .setSaveConsumer(config::setMinDurabilityPercentage).build())
                .addEntry(
                    entries.startIntField(translatable("armorhud.option.iconBobIntensity"), config.warningBobIntensity)

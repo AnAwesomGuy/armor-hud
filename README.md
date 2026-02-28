@@ -2,6 +2,8 @@
 
 Minecraft mod that adds a HUD widget that shows your current armor items.
 
+### Use the [original mod from uku]((https://modrinth.com/mod/ukus-armor-hud)) for versions `26.1+`!
+
 This mod adds a minimalistic vanilla-like widget that shows your armor items and a warning if durability is low enough.
 While other mods expect the player to look at numbers all over the screen, this mod allows to see your armor items in a
 vanilla-style minimalistic widget without extra text or numbers.
@@ -125,11 +127,11 @@ Powered by [Cloth Config](https://modrinth.com/mod/cloth-config).
 17. `"minDurabilityValue"`
     * If durability value of a displayed item is equal or lower than this setting, a warning will be shown.
     * Type: integer
-    * Default value: `5`
+    * Default value: `10`
 18. `"minDurabilityPercentage"`
     * If durability of a displayed item is equal or below this percentage, a warning will be shown.
-    * Type: float
-    * Default value: `0.05`
+    * Type: integer
+    * Default value: `5`
 19. `"warningBobIntensity"`
     * This parameter defines how quickly warning icon will move up and down when shown.
       Lower the number quicker the motion.

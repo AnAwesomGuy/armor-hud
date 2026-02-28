@@ -47,8 +47,8 @@ public class ArmorHudConfig implements Serializable {
     public boolean reversed = false;
     public boolean iconsShown = true;
     public boolean warningShown = true;
-    public int minDurabilityValue = 5;
-    public double minDurabilityPercentage = 0.05;
+    public int minDurabilityValue = 10;
+    public int minDurabilityPercentage = 5;
     public int warningBobIntensity = 3;
 
     //region // getter and setters
@@ -155,14 +155,11 @@ public class ArmorHudConfig implements Serializable {
     public void setMinDurabilityValue(int minDurabilityValue) {
         this.minDurabilityValue = minDurabilityValue;
     }
-    public double getMinDurabilityPercentage() {
+    public int getMinDurabilityPercentage() {
         return minDurabilityPercentage;
     }
-    public void setMinDurabilityPercentage(double minDurabilityPercentage) {
-        this.minDurabilityPercentage = minDurabilityPercentage;
-    }
     public void setMinDurabilityPercentage(int minDurabilityPercentage) {
-        this.minDurabilityPercentage = minDurabilityPercentage / 100.0;
+        this.minDurabilityPercentage = minDurabilityPercentage;
     }
     public int getWarningBobIntensity() {
         return warningBobIntensity;

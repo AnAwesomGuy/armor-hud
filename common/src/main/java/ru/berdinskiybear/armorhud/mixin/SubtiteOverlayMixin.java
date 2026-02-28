@@ -6,7 +6,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.SubtitleOverlay;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -14,8 +13,6 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import ru.berdinskiybear.armorhud.ArmorHudMod;
 import ru.berdinskiybear.armorhud.config.ArmorHudConfig;
-
-import java.util.List;
 
 @Mixin(SubtitleOverlay.class)
 public class SubtiteOverlayMixin {
@@ -29,16 +26,7 @@ public class SubtiteOverlayMixin {
         Player player = ArmorHudMod.getCameraPlayer();
         if (player == null) return;
 
-        List<ItemStack> armorItems = ArmorHudMod.nonEmptyArmor(player);
-        int offset = 0;
-
-        if (!armorItems.isEmpty() || config.getWidgetShown() == ArmorHudConfig.WidgetShown.ALWAYS) {
-            offset = config.getOffsetY();
-            if (config.isWarningShown() && armorItems.stream().anyMatch(ArmorHudMod::shouldShowWarning))
-                offset += config.getWarningBobIntensity() != 0 ? 10 + ArmorHudMod.WARNING_OFFSET : 10;
-        }
-
-        offsetRef.set(Math.max(offset, 0));
+        offsetRef.set(Math.max(ArmorHudMod.getArmorHudOffset(player, config, 4, 1, 0), 0));
     }
 
     @ModifyArg(method = "render", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;translate(FFF)V"), index = 1)

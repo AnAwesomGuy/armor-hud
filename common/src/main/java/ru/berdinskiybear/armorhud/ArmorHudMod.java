@@ -39,7 +39,8 @@ public final class ArmorHudMod {
     public static final KeyMapping TOGGLE_HUD = new KeyMapping("armorhud.keybind.toggle", GLFW.GLFW_KEY_UNKNOWN,
                                                                "armorhud.name");
 
-    public static final ResourceLocation WARNING_TEXTURE = ResourceLocation.fromNamespaceAndPath(ArmorHudMod.MOD_ID, "warn.png");
+    public static final ResourceLocation WARNING_TEXTURE = ResourceLocation.fromNamespaceAndPath(ArmorHudMod.MOD_ID,
+                                                                                                 "warn");
 
     public static final int STEP = 20, SIZE = 22, EDGE_SIZE = 3,
         HOTBAR_OFFSET = 98, OFFHAND_OFFSET = SIZE + 7, ATTACK_INDICATOR_OFFSET = 23, WARNING_OFFSET = 4; // constants
@@ -49,8 +50,28 @@ public final class ArmorHudMod {
         return Minecraft.getInstance().getCameraEntity() instanceof Player player ? player : null;
     }
 
-    public static List<ItemStack> nonEmptyArmor(Player player) {
-        return player.getInventory().armor.stream().filter(s -> !s.isEmpty()).toList();
+    // returns: true -> show warnings, false -> no warnings but hud is shown, default -> hud isn't shown at all
+    public static int getArmorHudOffset(Player player, ArmorHudConfig config, int textOffset, int warningOffset, int offset) {
+        offset += config.getOffsetY();
+        boolean showHud = config.getWidgetShown() == ArmorHudConfig.WidgetShown.ALWAYS;
+        boolean textShown = false;
+        final boolean showWarnings = config.isWarningShown();
+        for (ItemStack stack : player.getInventory().armor) {
+            if (!stack.isEmpty()) {
+                if (stack.isDamageableItem() && config.getDurabilityDisplay() != ArmorHudConfig.DurabilityDisplay.BAR)
+                    textShown = true;
+                if (showWarnings) {
+                    if (shouldShowWarning(stack))
+                        return offset + config.getWarningBobIntensity() + warningOffset; // warnings are being shown
+                    // showHud = true
+                } else if (textShown)
+                    return offset + textOffset;
+                else
+                    return offset; // no warnings but hud is shown
+                showHud = true;
+            }
+        }
+        return showHud ? (textShown ? offset + textOffset : offset) : 0;
     }
 
     public static boolean shouldShowWarning(ItemStack stack) {
@@ -59,7 +80,7 @@ public final class ArmorHudMod {
         final int damage = stack.getDamageValue();
         final int maxDamage = stack.getMaxDamage();
         return maxDamage - damage <= ArmorHudConfig.CONFIG.getMinDurabilityValue() ||
-            (1.0 - ((double)damage / (double)maxDamage)) <= ArmorHudConfig.CONFIG.getMinDurabilityPercentage();
+            (100 - (100 * damage) / maxDamage) <= ArmorHudConfig.CONFIG.getMinDurabilityPercentage();
     }
 
     // message me on discord if you need help reading this, i can try to explain (or ask ai or smth idk)
@@ -142,8 +163,8 @@ public final class ArmorHudMod {
             rotatedY = widgetY;
         }
 
-        // here I draw the slots (help me)
-        // drawGuiTexture(Identifier texture, int textureWidth, int textureHeight, int u, int v, int x, int y, int width, int height)
+        // here I draw the slots
+        // blitSprite(Identifier texture, int textureWidth, int textureHeight, int u, int v, int x, int y, int width, int height)
         // 182 and 22 is the width and height of the hotbar texture
         // 29 and 24 is the width and height of the offhand texture
         switch (config.getStyle()) {
@@ -189,7 +210,8 @@ public final class ArmorHudMod {
         int warningOffset = 0;
         if (config.isWarningShown()) {
             final int intensity = config.getWarningBobIntensity();
-            warningOffset = vertical ? (right ? -12 : STEP) : (anchorTop ? STEP : -WARNING_OFFSET - 8);
+            // vertical ? (right ? -12 : STEP) : (anchorTop ? STEP : -12)
+            warningOffset = (vertical && !right || !vertical && anchorTop) ? STEP : -8 - WARNING_OFFSET;
             if (intensity != 0) {
                 // sine wave that goes up and down for the bob
                 int bob = Math.round(Mth.sin(ticks / 2F) / 2F * intensity); // hi bob
@@ -201,14 +223,19 @@ public final class ArmorHudMod {
         // draw the armour items and the warning signs if necessary
         TextureAtlas atlas = showEmpty && config.isIconsShown() ?
             client.getModelManager().getAtlas(InventoryMenu.BLOCK_ATLAS) : null;
-        final boolean reversed = config.isReversed();
         final ArmorHudConfig.DurabilityDisplay durabilityDisplay = config.getDurabilityDisplay();
         for (int i = 0, x = widgetX + EDGE_SIZE, y = widgetY + EDGE_SIZE; i < armorSize; i++) {
-            int index = reversed ? i : armorSize - i - 1;
-            ItemStack stack = armor.get(index);
+            ItemStack stack = armor.get(config.isReversed() ? i : armorSize - i - 1);
             if (!stack.isEmpty()) {
                 // draw item
                 gui.callRenderSlot(context, x, y, tickCounter, player, stack, nonEmptyCount);
+
+                // draw warning
+                if (config.isWarningShown() && ArmorHudMod.shouldShowWarning(stack))
+                    context.blitSprite(ArmorHudMod.WARNING_TEXTURE,
+                                       x + (vertical ? warningOffset : WARNING_OFFSET),
+                                       y + (vertical ? WARNING_OFFSET : warningOffset),
+                                       8, 8);
 
                 // render durability numbers
                 if (durabilityDisplay != ArmorHudConfig.DurabilityDisplay.BAR && stack.isDamageableItem()) {
@@ -243,22 +270,14 @@ public final class ArmorHudMod {
                         matrices.scale(factor, factor, factor); // scale
                     }
                     // this math hurt my brain but it works :D
-                    context.drawString(textRenderer, s, textX, textY, stack.getBarColor(), true);
+                    context.drawString(textRenderer, s, textX, textY, stack.getBarColor());
                     if (!vertical)
                         matrices.popPose(); // pop 🫧
-                }
-
-                // draw warning (above durability numbers)
-                if (config.isWarningShown() && ArmorHudMod.shouldShowWarning(stack)) {
-                    context.blit(ArmorHudMod.WARNING_TEXTURE,
-                                 x + (vertical ? warningOffset : WARNING_OFFSET),
-                                 y + (vertical ? WARNING_OFFSET : warningOffset),
-                                 -1, 0, 0, 8, 8, 8, 8); // z = -1 to appear behind the text
                 }
             } else if (atlas != null) { // background slot icons (if slot is empty and the config says so)
                 ResourceLocation spriteId =
                     InventoryMenuAccessor.getTEXTURE_EMPTY_SLOTS()
-                                         .get(InventoryMenuAccessor.getSLOT_IDS()[index]);
+                                         .get(InventoryMenuAccessor.getSLOT_IDS()[config.isReversed() ? armorSize - i - 1 : i]);
                 TextureAtlasSprite sprite = atlas.getSprite(spriteId);
                 context.blit(x, y, 0, 16, 16, sprite);
             }
